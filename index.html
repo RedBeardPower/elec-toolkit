@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#111111">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Elec Toolkit">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Electrical Field Toolkit</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#111;color:#e8e8e8;min-height:100vh;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding-bottom:env(safe-area-inset-bottom)}
+#nav{background:#1a1a1a;border-bottom:1px solid #333;padding:env(safe-area-inset-top) calc(1.5rem + env(safe-area-inset-right)) 0 calc(1.5rem + env(safe-area-inset-left));display:flex;align-items:center;gap:1rem;height:calc(52px + env(safe-area-inset-top));position:sticky;top:0;z-index:100}
+#nav-title{font-size:15px;font-weight:600;color:#f90;letter-spacing:.5px;flex:1}
+.nav-back{display:none;background:none;border:1px solid #444;color:#ccc;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+.nav-back:hover{border-color:#f90;color:#f90}
+#nav-breadcrumb{font-size:13px;color:#888}
+#home{padding:1.5rem}
+.section-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#666;margin:1.5rem 0 .75rem}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.tool-card{background:#1e1e1e;border:1px solid #2e2e2e;border-radius:10px;padding:1rem;cursor:pointer;transition:border-color .15s,background .15s}
+.tool-card:hover{border-color:#f90;background:#222}
+.tool-card .icon{font-size:22px;margin-bottom:.5rem}
+.tool-card .name{font-size:14px;font-weight:600;color:#e8e8e8;margin-bottom:4px}
+.tool-card .desc{font-size:12px;color:#888;line-height:1.4}
+#tool-view{display:none;padding:1.5rem;max-width:720px}
+.tool-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.tool-title{font-size:18px;font-weight:600;color:#f90}
+.reset-btn{background:none;border:1px solid #444;color:#888;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+.reset-btn:hover{border-color:#f90;color:#f90}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:12px;font-weight:500;color:#aaa;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.field select,.field input[type=number],.field input[type=text]{width:100%;background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:8px 10px;border-radius:6px;font-size:14px;outline:none}
+.field select:focus,.field input:focus{border-color:#f90}
+.field textarea{width:100%;background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:8px 10px;border-radius:6px;font-size:14px;outline:none;resize:vertical}
+.field textarea:focus{border-color:#f90}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.btn{background:#f90;color:#111;border:none;padding:9px 20px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-top:.5rem}
+.btn:hover{background:#ffb020}
+.result-box{background:#1e1e1e;border:1px solid #2e2e2e;border-radius:8px;padding:1rem 1.25rem;margin-top:1.25rem}
+.result-box h3{font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #252525}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:13px;color:#aaa}
+.result-value{font-size:15px;font-weight:600;color:#f0f0f0}
+.result-value.good{color:#4caf50}
+.result-value.warn{color:#ff9800}
+.result-value.bad{color:#f44336}
+.result-note{font-size:12px;color:#777;margin-top:.5rem;line-height:1.5}
+.gauge-wrap{margin-top:.75rem}
+.gauge-bar{height:18px;background:#2a2a2a;border-radius:9px;overflow:hidden;margin-bottom:6px}
+.gauge-fill{height:100%;border-radius:9px;transition:width .4s}
+.ref-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:.5rem}
+.ref-table th{background:#1e1e1e;color:#aaa;font-weight:600;text-align:left;padding:7px 10px;border-bottom:1px solid #333;font-size:11px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+.ref-table td{padding:6px 10px;border-bottom:1px solid #222;color:#d0d0d0;cursor:pointer}
+.ref-table tr:hover td{background:#1c1c1c}
+.ref-table td.col-hl{background:#1e2a1a !important}
+.ref-table th.col-hl{background:#1e2a1a !important;color:#8bc34a}
+.ref-table tr.row-hl td{background:#1a1e2a !important}
+.ref-table tr.row-hl th{background:#1a1e2a !important;color:#7cb0f0}
+.ref-table td.intersect,.ref-table th.intersect{background:#2d3a1a !important;outline:2px solid #f90;outline-offset:-2px;color:#f90 !important;font-weight:700;border-radius:2px}
+.wire-row{display:grid;grid-template-columns:1fr 1fr 1fr 32px;gap:8px;align-items:end;margin-bottom:8px}
+.wire-row .field{margin-bottom:0}
+.remove-btn{background:#2a2a2a;border:1px solid #444;color:#f44336;width:30px;height:36px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;margin-top:20px}
+.remove-btn:hover{background:#3a1a1a;border-color:#f44336}
+.add-wire-btn{background:none;border:1px dashed #444;color:#888;padding:7px 14px;border-radius:6px;font-size:13px;cursor:pointer;margin-bottom:1rem}
+.add-wire-btn:hover{border-color:#f90;color:#f90}
+.tab-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.tab-btn{background:#1e1e1e;border:1px solid #333;color:#aaa;padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer}
+.tab-btn.active{background:#f90;color:#111;border-color:#f90;font-weight:600}
+.err{color:#f44336;font-size:13px;margin-top:.5rem}
+@media (max-width:640px){
+  #home,#tool-view{padding:1rem}
+  .card-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .row3{grid-template-columns:1fr 1fr}
+  .tool-card{padding:.8rem}
+  .btn,.add-wire-btn,.tab-btn{min-height:38px}
+}
+</style>
+</head>
+<body>
+<div id="nav">
+  <div id="nav-title">&#9889; Electrical Field Toolkit</div>
+  <span id="nav-breadcrumb"></span>
+  <button class="nav-back" id="back-btn" onclick="goHome()">&#8592; Home</button>
+</div>
+<div id="home">
+  <div class="section-label">Calculators</div><div class="card-grid" id="calc-grid"></div>
+  <div class="section-label">NEC Reference Tables</div><div class="card-grid" id="table-grid"></div>
+  <div class="section-label">Calculations &amp; Conversions</div><div class="card-grid" id="formula-grid"></div>
+</div>
+<div id="tool-view"></div>
+
+<script>
+window.onerror=function(msg,src,line,col,err){
+  var d=document.getElementById('err-banner');
+  if(!d){d=document.createElement('div');d.id='err-banner';d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#5a1010;color:#fff;padding:10px;font:12px monospace;z-index:9999;white-space:pre-wrap';document.body.appendChild(d);}
+  d.textContent='JS ERROR line '+line+':'+col+'  '+msg;
+  return false;
+};
+/* ===== DATA ===== */
+var AMP_TABLE=[
+  ['14 AWG',15,20,25,null,null,null],['12 AWG',20,25,30,15,20,25],
+  ['10 AWG',30,35,40,25,30,35],['8 AWG',40,50,55,30,40,45],
+  ['6 AWG',55,65,75,40,50,60],['4 AWG',70,85,95,55,65,75],
+  ['3 AWG',85,100,110,65,75,85],['2 AWG',95,115,130,75,90,100],
+  ['1 AWG',110,130,150,85,100,115],['1/0 AWG',125,150,170,100,120,135],
+  ['2/0 AWG',145,175,195,115,135,150],['3/0 AWG',165,200,225,130,155,175],
+  ['4/0 AWG',195,230,260,150,180,205],['250 kcmil',215,255,290,170,205,230],
+  ['300 kcmil',240,285,320,190,230,255],['350 kcmil',260,310,350,210,250,280],
+  ['400 kcmil',280,335,380,225,270,305],['500 kcmil',320,380,430,260,310,350],
+  ['600 kcmil',350,420,475,285,340,385],['750 kcmil',400,475,535,320,385,435],
+  ['1000 kcmil',455,545,615,375,445,500]
+];
+var WIRE_AREA={'14':0.0097,'12':0.0133,'10':0.0211,'8':0.0366,'6':0.0507,'4':0.0824,'3':0.0973,'2':0.1158,'1':0.1562,'1/0':0.1855,'2/0':0.2223,'3/0':0.2660,'4/0':0.3237,'250':0.3970,'300':0.4608,'350':0.5346,'400':0.6082,'500':0.7542,'600':0.9229,'750':1.1652,'1000':1.5482};
+var WIRE_AREA_XHHW={'14':0.0097,'12':0.0133,'10':0.0211,'8':0.0437,'6':0.0590,'4':0.0814,'3':0.0962,'2':0.1146,'1':0.1534,'1/0':0.1825,'2/0':0.2190,'3/0':0.2624,'4/0':0.3197,'250':0.3904,'300':0.4536,'350':0.5262,'400':0.5993,'500':0.7421,'600':0.9076,'750':1.1442,'1000':1.5220};
+var WIRE_AREA_THW={'14':0.0139,'12':0.0181,'10':0.0243,'8':0.0437,'6':0.0590,'4':0.0814,'3':0.0962,'2':0.1146,'1':0.1534,'1/0':0.1825,'2/0':0.2190,'3/0':0.2624,'4/0':0.3197,'250':0.3904,'300':0.4536,'350':0.5262,'400':0.5993,'500':0.7421,'600':0.9076,'750':1.1442,'1000':1.5220};
+var WIRE_AREA_TW={'14':0.0139,'12':0.0181,'10':0.0243,'8':0.0437,'6':0.0726,'4':0.1018,'3':0.1208,'2':0.1469,'1':0.1963,'1/0':0.2332,'2/0':0.2715,'3/0':0.3107,'4/0':0.3840,'250':0.4877,'300':0.5542,'350':0.6310,'400':0.7088,'500':0.8825};
+var WIRE_AREA_RHH={'14':0.0293,'12':0.0353,'10':0.0437,'8':0.0835,'6':0.1041,'4':0.1333,'3':0.1521,'2':0.1750,'1':0.2660,'1/0':0.3039,'2/0':0.3505,'3/0':0.4072,'4/0':0.4754,'250':0.6291,'300':0.7088,'350':0.7870,'400':0.8659,'500':1.0082,'600':1.2272,'750':1.5220,'1000':1.9635};
+var WIRE_AREA_THHW={'14':0.0097,'12':0.0133,'10':0.0211,'8':0.0437,'6':0.0590,'4':0.0814,'3':0.0962,'2':0.1146,'1':0.1534,'1/0':0.1825,'2/0':0.2190,'3/0':0.2624,'4/0':0.3197,'250':0.3904,'300':0.4536,'350':0.5262,'400':0.5993,'500':0.7421,'600':0.9076,'750':1.1442,'1000':1.5220};
+var WIRE_AREA_MAP={thhn:WIRE_AREA,xhhw:WIRE_AREA_XHHW,thw:WIRE_AREA_THW,tw:WIRE_AREA_TW,rhh:WIRE_AREA_RHH,use2:WIRE_AREA_RHH,thhw:WIRE_AREA_THHW};
+var CONDUIT_TABLE=[
+  ['EMT','1/2"',0.304,0.161,0.094,0.122],['EMT','3/4"',0.533,0.283,0.165,0.213],
+  ['EMT','1"',0.864,0.458,0.268,0.346],['EMT','1-1/4"',1.496,0.793,0.464,0.598],
+  ['EMT','1-1/2"',2.036,1.079,0.631,0.814],['EMT','2"',3.356,1.779,1.040,1.342],
+  ['EMT','2-1/2"',5.858,3.105,1.816,2.343],['EMT','3"',8.846,4.688,2.742,3.538],
+  ['EMT','3-1/2"',11.545,6.119,3.579,4.618],['EMT','4"',14.753,7.819,4.573,5.901],
+  ['IMC','1/2"',0.342,0.181,0.106,0.137],['IMC','3/4"',0.586,0.311,0.182,0.234],
+  ['IMC','1"',0.959,0.508,0.297,0.384],['IMC','1-1/4"',1.647,0.873,0.510,0.659],
+  ['IMC','1-1/2"',2.225,1.179,0.690,0.890],['IMC','2"',3.630,1.924,1.125,1.452],
+  ['IMC','2-1/2"',5.452,2.890,1.690,2.181],['IMC','3"',8.411,4.458,2.607,3.364],
+  ['IMC','3-1/2"',11.257,5.966,3.490,4.503],['IMC','4"',14.448,7.657,4.479,5.779],
+  ['RMC','1/2"',0.314,0.166,0.097,0.125],['RMC','3/4"',0.549,0.291,0.170,0.220],
+  ['RMC','1"',0.887,0.470,0.275,0.355],['RMC','1-1/4"',1.526,0.809,0.473,0.610],
+  ['RMC','1-1/2"',2.071,1.098,0.642,0.828],['RMC','2"',3.408,1.806,1.056,1.363],
+  ['RMC','2-1/2"',5.220,2.767,1.618,2.088],['RMC','3"',8.085,4.285,2.506,3.234],
+  ['RMC','3-1/2"',10.694,5.668,3.315,4.278],['RMC','4"',13.631,7.224,4.225,5.452],
+  ['PVC-40','1/2"',0.285,0.151,0.088,0.114],['PVC-40','3/4"',0.508,0.269,0.157,0.203],
+  ['PVC-40','1"',0.832,0.441,0.258,0.333],['PVC-40','1-1/4"',1.453,0.770,0.450,0.581],
+  ['PVC-40','1-1/2"',1.986,1.052,0.615,0.794],['PVC-40','2"',3.291,1.744,1.020,1.316],
+  ['PVC-40','2-1/2"',5.453,2.890,1.690,2.181],['PVC-40','3"',8.688,4.605,2.693,3.475],
+  ['PVC-40','3-1/2"',11.258,5.967,3.490,4.503],['PVC-40','4"',14.284,7.571,4.428,5.714]
+];
+var EGC_TABLE=[[15,14,12],[20,12,10],[60,10,8],[100,8,6],[200,6,4],[300,4,2],[400,3,1],[500,2,'1/0'],[600,1,'2/0'],[800,'1/0','3/0'],[1000,'2/0','4/0'],[1200,'3/0','250'],[1600,'4/0','350'],[2000,'250','400'],[2500,'350','600'],[3000,'400','600'],[4000,'500','750'],[5000,'700','1200'],[6000,'800','1200']];
+var DERATING=[[4,6,0.80],[7,9,0.70],[10,20,0.50],[21,30,0.45],[31,40,0.40],[41,999,0.35]];
+var RESIST_CU={'14':3.14,'12':1.98,'10':1.24,'8':0.778,'6':0.491,'4':0.308,'3':0.245,'2':0.194,'1':0.154,'1/0':0.122,'2/0':0.0967,'3/0':0.0766,'4/0':0.0608,'250':0.0515,'300':0.0429,'350':0.0367,'400':0.0321,'500':0.0258,'600':0.0214,'750':0.0171,'1000':0.0129};
+var RESIST_AL={'12':3.26,'10':2.04,'8':1.28,'6':0.808,'4':0.508,'3':0.403,'2':0.319,'1':0.253,'1/0':0.201,'2/0':0.159,'3/0':0.126,'4/0':0.100,'250':0.0847,'300':0.0706,'350':0.0605,'400':0.0529,'500':0.0424,'600':0.0353,'750':0.0282,'1000':0.0212};
+var CU_TO_AL={'14':'12','12':'10','10':'8','8':'6','6':'4','4':'2','3':'1','2':'1/0','1':'2/0','1/0':'3/0','2/0':'4/0','3/0':'250','4/0':'300','250':'400','300':'500','350':'500','400':'600','500':'750','600':'1000','750':'N/A','1000':'N/A'};
+var WIRE_SIZES=['14','12','10','8','6','4','3','2','1','1/0','2/0','3/0','4/0','250','300','350','400','500','600','750','1000'];
+var CONDUIT_TRADE_SIZES=['1/2"','3/4"','1"','1-1/4"','1-1/2"','2"','2-1/2"','3"','3-1/2"','4"','5"','6"'];
+var CONDUIT_INCH={'1/2"':0.5,'3/4"':0.75,'1"':1,'1-1/4"':1.25,'1-1/2"':1.5,'2"':2,'2-1/2"':2.5,'3"':3,'3-1/2"':3.5,'4"':4,'5"':5,'6"':6};
+var COND_OD={'1/2"':0.706,'3/4"':0.922,'1"':1.163,'1-1/4"':1.510,'1-1/2"':1.740,'2"':2.197,'2-1/2"':2.875,'3"':3.500,'3-1/2"':4.000,'4"':4.500,'5"':5.563,'6"':6.625};
+function condOD(sz){return COND_OD[sz]||((CONDUIT_INCH[sz]||1)+0.3);}
+
+var MOTOR_FLC_3PH=[[0.5,2.5,2.4,2.2,1.1,0.9],[0.75,3.7,3.5,3.2,1.6,1.3],[1,4.8,4.6,4.2,2.1,1.7],[1.5,6.9,6.6,6.0,3.0,2.4],[2,7.8,7.5,6.8,3.4,2.7],[3,11.0,10.6,9.6,4.8,3.9],[5,17.5,16.7,15.2,7.6,6.1],[7.5,25.3,24.2,22,11,9],[10,32.2,30.8,28,14,11],[15,48.3,46.2,42,21,17],[20,62.1,59.4,54,27,22],[25,78.2,74.8,68,34,27],[30,92,88,80,40,32],[40,120,114,104,52,41],[50,150,143,130,65,52],[60,177,169,154,77,62],[75,221,211,192,96,77],[100,285,273,248,124,99],[125,359,343,312,156,125],[150,414,396,360,180,144],[200,552,528,480,240,192],[250,null,null,null,302,242],[300,null,null,null,361,289],[350,null,null,null,414,336],[400,null,null,null,477,382],[450,null,null,null,515,412],[500,null,null,null,590,472]];
+// NEC Table 430.248 - 1ph FLC [HP, 115V, 200V, 208V, 230V]
+var MOTOR_FLC_1PH=[[0.17,4.4,2.5,2.4,2.2],[0.25,5.8,3.3,3.2,2.9],[0.33,7.2,4.1,4.0,3.6],[0.5,9.8,5.6,5.4,4.9],[0.75,13.8,7.9,7.6,6.9],[1,16,9.2,8.8,8],[1.5,20,11.5,11,10],[2,24,13.8,13.2,12],[3,34,19.6,18.7,17],[5,56,32.2,30.8,28],[7.5,80,46,44,40],[10,100,57.5,55,50]];
+
+var GEN_DATA=[[20,0.6,1.1,1.6,2.1],[25,0.7,1.3,1.9,2.5],[30,0.8,1.5,2.2,3.0],[35,0.9,1.7,2.5,3.4],[40,1.0,1.9,2.8,3.8],[45,1.1,2.1,3.1,4.2],[50,1.2,2.3,3.4,4.5],[60,1.4,2.6,3.9,5.2],[75,1.7,3.1,4.7,6.2],[100,2.2,3.9,5.8,7.7],[125,2.6,4.7,7.0,9.3],[150,3.0,5.5,8.1,10.9],[175,3.4,6.2,9.2,12.4],[200,3.8,6.9,10.2,13.7],[250,4.6,8.4,12.3,16.6],[300,5.4,9.8,14.5,19.5],[350,6.2,11.2,16.6,22.3],[400,7.0,12.6,18.7,25.0],[500,8.5,15.4,22.7,30.5],[600,10.0,18.2,26.9,36.2],[750,12.2,22.1,32.7,44.0],[1000,15.9,28.8,42.6,57.3],[1250,19.5,35.3,52.3,70.4],[1500,22.8,41.4,61.3,82.5],[2000,29.8,54.1,80.1,107.8],[2500,36.5,66.3,98.1,132.0],[3000,43.2,78.5,116.2,156.3]];
+
+/* ===== NAV ===== */
+var _curTool=null,_curLabel=null;
+function goHome(){
+  document.getElementById('home').style.display='block';
+  document.getElementById('tool-view').style.display='none';
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('nav-breadcrumb').textContent='';
+  _tblSelCol=null;_tblSelRow=null;
+}
+function openTool(id,label){
+  _curTool=id;_curLabel=label;
+  var tv=document.getElementById('tool-view');
+  tv.innerHTML='<div class="tool-header"><div class="tool-title">'+label+'</div>'
+    +'<button class="reset-btn" onclick="openTool(_curTool,_curLabel)">&#8635; Reset</button></div>'
+    +renderTool(id);
+  document.getElementById('home').style.display='none';
+  tv.style.display='block';
+  document.getElementById('back-btn').style.display='inline-block';
+  document.getElementById('nav-breadcrumb').textContent=label;
+  if(typeof window['init_'+id]==='function') window['init_'+id]();
+}
+
+/* ===== REGISTRY ===== */
+var TOOLS={
+  calcs:[
+    {id:'vdrop',icon:'&#9889;',name:'Voltage Drop',desc:'Min wire, max distance, or VD%'},
+    {id:'cfill',icon:'&#128309;',name:'Conduit Fill',desc:'NEC fill % with pass/fail gauge'},
+    {id:'ampacity',icon:'&#127777;',name:'Wire Ampacity',desc:'NEC 310.16 with derating'},
+    {id:'boxfill',icon:'&#128230;',name:'Box Fill',desc:'NEC 314.16 device box sizing'},
+    {id:'power',icon:'&#128267;',name:'Power / Current',desc:'kVA, kW, Amps (1ph & 3ph)'},
+    {id:'cutoal',icon:'&#9881;',name:'Cu to Al',desc:'Equivalent aluminum conductor'},
+    {id:'wirecolor',icon:'&#127981;',name:'Wire Color Code',desc:'Phase colors 1ph/3ph, 120/208 & 277/480V'},
+    {id:'conduitbend',icon:'&#8635;',name:'Conduit Bending',desc:'Offset, saddle, stub-up with visual diagram'},
+    {id:'boxsize',icon:'&#128208;',name:'Pull Box Sizing',desc:'NEC 314.28 check + custom box orders (L-shape, gutters)'},
+    {id:'genfuel',icon:'&#9981;',name:'Generator Fuel',desc:'Diesel GPH & load-test fuel estimate'}
+  ],
+  tables:[
+    {id:'t310',icon:'&#128203;',name:'Table 310.16',desc:'Cu & Al ampacity'},
+    {id:'tcondfill',icon:'&#128208;',name:'Conduit Dimensions',desc:'NEC Ch.9 Table 4 fill areas'},
+    {id:'t250',icon:'&#128297;',name:'Table 250.122',desc:'EGC sizing by OCPD'},
+    {id:'tderating',icon:'&#128201;',name:'Derating Factors',desc:'310.15(B)(3)(a)'},
+    {id:'twire',icon:'&#128207;',name:'Wire Dimensions',desc:'THHN/XHHW area (Ch.9 Table 5)'}
+  ],
+  formulas:[
+    {id:'ohmslaw',icon:'&#9889;',name:"Ohm's Law",desc:'Solve E, I, R, P'},
+    {id:'motors',icon:'&#9881;',name:'Motor Calculations',desc:'FLA, sizing, LRC (NEC 430)'},
+    {id:'xfmr',icon:'&#128260;',name:'Transformer Calc',desc:'KVA sizing, turns ratio, currents'},
+    {id:'pfcorr',icon:'&#128208;',name:'Power Factor Corr.',desc:'Capacitor bank kVAR sizing'},
+    {id:'reactance',icon:'&#126;',name:'Impedance / Reactance',desc:'XL, XC, Z, series/parallel'},
+    {id:'lighting',icon:'&#128161;',name:'Lighting Calc',desc:'Footcandles, lumens, fixture count'},
+    {id:'dwelload',icon:'&#127968;',name:'Dwelling Load',desc:'NEC 220 service sizing'},
+    {id:'convtable',icon:'&#128290;',name:'Conversions',desc:'Units, wire area, temp, prefixes'}
+  ]
+};
+
+function renderHome(){
+  var cg=document.getElementById('calc-grid'),tg=document.getElementById('table-grid'),fg=document.getElementById('formula-grid');
+  function makeCard(t){
+    return '<div class="tool-card" onclick="openToolById(\''+t.id+'\')"><div class="icon">'+t.icon+'</div><div class="name">'+t.name+'</div><div class="desc">'+t.desc+'</div></div>';
+  }
+  cg.innerHTML=TOOLS.calcs.map(makeCard).join('');
+  tg.innerHTML=TOOLS.tables.map(makeCard).join('');
+  fg.innerHTML=TOOLS.formulas.map(makeCard).join('');
+}
+// Lookup label from registry by id so we never embed the label string in onclick HTML
+function openToolById(id){
+  var all=TOOLS.calcs.concat(TOOLS.tables).concat(TOOLS.formulas);
+  var entry=all.find(function(t){return t.id===id;});
+  openTool(id,entry?entry.name:id);
+}
+function renderTool(id){
+  var map={vdrop:renderVdrop,cfill:renderCfill,ampacity:renderAmpacity,boxfill:renderBoxfill,power:renderPower,cutoal:renderCutoal,wirecolor:renderWirecolor,conduitbend:renderConduitbend,genfuel:renderGenfuel,boxsize:renderBoxsize,t310:renderT310,tcondfill:renderTCondfill,t250:renderT250,tderating:renderTDerating,twire:renderTWire,ohmslaw:renderOhmslaw,motors:renderMotors,xfmr:renderXfmr,pfcorr:renderPfcorr,reactance:renderReactance,lighting:renderLighting,dwelload:renderDwelload,convtable:renderConvtable};
+  return map[id]?map[id]():'<p style="color:#888">Coming soon.</p>';
+}
+
+/* ===== HELPERS ===== */
+function selOpts(arr,valFn,lblFn,selVal){return arr.map(function(a){var v=valFn(a),l=lblFn(a);return '<option value="'+v+'"'+(v==selVal?' selected':'')+'>'+l+'</option>';}).join('');}
+function rb(html){return '<div class="result-box">'+html+'</div>';}
+function rh(t){return '<h3>'+t+'</h3>';}
+function rr(l,v,cls){return '<div class="result-row"><span class="result-label">'+l+'</span><span class="result-value'+(cls?' '+cls:'')+'" >'+v+'</span></div>';}
+function rn(t){return '<div class="result-note">'+t+'</div>';}
+
+/* ===== 1. VOLTAGE DROP ===== */
+function renderVdrop(){
+  var sizes=WIRE_SIZES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+  return '<div class="row"><div class="field"><label>Mode</label><select id="vd-mode" onchange="vdModeChange()"><option value="vd">Voltage Drop %</option><option value="minsize">Min Conductor Size</option><option value="maxdist">Max Distance</option></select></div>'
+    +'<div class="field"><label>Phase</label><select id="vd-phase"><option value="1">Single Phase (1ph)</option><option value="3">Three Phase (3ph)</option></select></div></div>'
+    +'<div class="row"><div class="field"><label>Conductor</label><select id="vd-cond"><option value="cu">Copper</option><option value="al">Aluminum</option></select></div>'
+    +'<div class="field"><label>Voltage (V)</label><select id="vd-volt"><option>120</option><option>208</option><option>240</option><option selected>277</option><option>480</option><option>600</option></select></div></div>'
+    +'<div class="row" id="vd-size-row"><div class="field"><label>Wire Size</label><select id="vd-size">'+sizes+'</select></div>'
+    +'<div class="field"><label>Parallels</label><select id="vd-par"><option>1</option><option>2</option><option>3</option><option>4</option><option>6</option></select></div></div>'
+    +'<div class="row"><div class="field"><label>One-Way Length (ft)</label><input type="number" id="vd-len" value="100" min="1"></div>'
+    +'<div class="field"><label>Load Current (A)</label><input type="number" id="vd-amps" value="20" min="0.1" step="0.1"></div></div>'
+    +'<div class="field" id="vd-maxvd-row" style="display:none"><label>Max Allowed VD %</label><input type="number" id="vd-maxvd" value="3" min="0.1" max="10" step="0.1"></div>'
+    +'<div id="vd-err" class="err"></div><button class="btn" onclick="calcVdrop()">Calculate</button><div id="vd-result"></div>'
+    +'<div class="result-note">NEC 210.19(A) informational note: max 3% VD on branch circuits, 5% total. Uses DC resistance from NEC Ch.9 Table 8 (stranded, 75C) - standard for VD sizing; for 500 kcmil+ at low PF, check effective Z per Table 9.</div>';
+}
+function vdModeChange(){var m=document.getElementById('vd-mode').value;document.getElementById('vd-size-row').style.display=m==='minsize'?'none':'grid';document.getElementById('vd-maxvd-row').style.display=(m==='minsize'||m==='maxdist')?'block':'none';}
+function calcVdrop(){
+  var mode=document.getElementById('vd-mode').value,phase=parseInt(document.getElementById('vd-phase').value),cond=document.getElementById('vd-cond').value,volt=parseFloat(document.getElementById('vd-volt').value),len=parseFloat(document.getElementById('vd-len').value),amps=parseFloat(document.getElementById('vd-amps').value),par=parseInt(document.getElementById('vd-par').value);
+  var RT=cond==='cu'?RESIST_CU:RESIST_AL,pm=phase===3?Math.sqrt(3):2,err=document.getElementById('vd-err');err.textContent='';
+  if(!(len>0)||!(amps>0)){err.textContent='Enter a valid length and load current.';return;}
+  if(mode==='vd'){
+    var sz=document.getElementById('vd-size').value,R=RT[sz];if(!R){err.textContent='No resistance data.';return;}
+    var vdV=(amps*(R/1000)*len*pm)/par,vdP=(vdV/volt)*100,cls=vdP<=3?'good':vdP<=5?'warn':'bad';
+    document.getElementById('vd-result').innerHTML=rb(rh('Result')+rr('Voltage Drop',vdV.toFixed(2)+' V','')+rr('Voltage Drop %',vdP.toFixed(2)+'%',cls)+rr('Receiving Voltage',(volt-vdV).toFixed(1)+' V',(volt-vdV)<=0?'bad':'')+rr('NEC 3% Limit',vdP<=3?'Pass':'Exceeds',cls));
+  } else if(mode==='minsize'){
+    var maxvd=parseFloat(document.getElementById('vd-maxvd').value)/100,maxVdV=volt*maxvd,maxR=(maxVdV*par)/(amps*(len/1000)*pm);
+    var found=WIRE_SIZES.find(function(s){return RT[s]&&RT[s]<=maxR;});
+    if(!found){document.getElementById('vd-result').innerHTML='<div class="err">No standard size meets this requirement.</div>';return;}
+    var vdV2=(amps*(RT[found]/1000)*len*pm)/par;
+    document.getElementById('vd-result').innerHTML=rb(rh('Result')+rr('Minimum Wire Size',found+' AWG/kcmil','good')+rr('Actual VD',((vdV2/volt)*100).toFixed(2)+'% / '+vdV2.toFixed(2)+' V',''));
+  } else {
+    var sz2=document.getElementById('vd-size').value,maxvd2=parseFloat(document.getElementById('vd-maxvd').value)/100,R2=RT[sz2];if(!R2){err.textContent='No resistance data.';return;}
+    var maxLen=(volt*maxvd2*par*1000)/(amps*R2*pm);
+    document.getElementById('vd-result').innerHTML=rb(rh('Result')+rr('Max One-Way Distance',maxLen.toFixed(0)+' ft','good'));
+  }
+}
+
+/* ===== 2. CONDUIT FILL ===== */
+var cfillWires=[],cfmWires=[];
+function renderCfill(){
+  var condTypes=[];CONDUIT_TABLE.forEach(function(r){if(condTypes.indexOf(r[0])<0)condTypes.push(r[0]);});
+  var typeOpts=condTypes.map(function(t){return '<option>'+t+'</option>';}).join('');
+  return '<div class="tab-row" id="cf-mode-tabs">'
+    +'<button class="tab-btn active" onclick="cfModeSwitch(\'fill\',this)">Fill Check</button>'
+    +'<button class="tab-btn" onclick="cfModeSwitch(\'minsize\',this)">Min Conduit Size</button></div>'
+    +'<div id="cf-fill-mode">'
+    +'<div class="row"><div class="field"><label>Conduit Type</label><select id="cf-type" onchange="updateCfSizes()">'+typeOpts+'</select></div>'
+    +'<div class="field"><label>Conduit Size</label><select id="cf-size"></select></div></div>'
+    +'<div style="margin-bottom:.5rem;font-size:12px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Conductors</div>'
+    +'<div id="cf-wires"></div><button class="add-wire-btn" onclick="addCfWire()">+ Add Wire</button>'
+    +'<div id="cf-err" class="err"></div><button class="btn" onclick="calcCfill()">Calculate</button><div id="cf-result"></div></div>'
+    +'<div id="cf-minsize-mode" style="display:none">'
+    +'<div class="row"><div class="field"><label>Conduit Type</label><select id="cfm-type">'+typeOpts+'</select></div></div>'
+    +'<div style="margin-bottom:.5rem;font-size:12px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Conductors</div>'
+    +'<div id="cfm-wires"></div><button class="add-wire-btn" onclick="addCfmWire()">+ Add Wire</button>'
+    +'<div id="cfm-err" class="err"></div><button class="btn" onclick="calcCfMin()">Find Minimum Size</button><div id="cfm-result"></div></div>';
+}
+window.cfModeSwitch=function(mode,btn){document.querySelectorAll('#cf-mode-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('cf-fill-mode').style.display=mode==='fill'?'block':'none';document.getElementById('cf-minsize-mode').style.display=mode==='minsize'?'block':'none';};
+function insOpts(){return '<option value="thhn">THHN/THWN-2</option><option value="thhw">THHW</option><option value="xhhw">XHHW/XHHW-2</option><option value="thw">THW/THW-2</option><option value="tw">TW</option><option value="rhh">RHH/RHW (no cover)</option><option value="use2">USE-2/RHW-2 (cover)</option>';}
+function wSzOpts(){return WIRE_SIZES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');}
+window.init_cfill=function(){cfillWires=[];cfmWires=[];updateCfSizes();addCfWire();addCfmWire();};
+function updateCfSizes(){var t=document.getElementById('cf-type').value,sz=[];CONDUIT_TABLE.forEach(function(r){if(r[0]===t&&sz.indexOf(r[1])<0)sz.push(r[1]);});document.getElementById('cf-size').innerHTML=sz.map(function(s){return '<option>'+s+'</option>';}).join('');}
+function addCfWire(){var id='w'+Date.now()+Math.floor(Math.random()*1000);cfillWires.push(id);var el=document.createElement('div');el.id='cfrow-'+id;el.className='wire-row';el.innerHTML='<div class="field"><label>Insulation</label><select class="cf-ins">'+insOpts()+'</select></div><div class="field"><label>Size</label><select class="cf-wsz">'+wSzOpts()+'</select></div><div class="field"><label>Qty</label><input type="number" class="cf-qty" value="1" min="1" max="99"></div><button class="remove-btn" onclick="removeCfWire(\''+id+'\')">x</button>';document.getElementById('cf-wires').appendChild(el);}
+function removeCfWire(id){cfillWires=cfillWires.filter(function(i){return i!==id;});var el=document.getElementById('cfrow-'+id);if(el)el.remove();}
+function addCfmWire(){var id='m'+Date.now()+Math.floor(Math.random()*1000);cfmWires.push(id);var el=document.createElement('div');el.id='cfmrow-'+id;el.className='wire-row';el.innerHTML='<div class="field"><label>Insulation</label><select class="cf-ins">'+insOpts()+'</select></div><div class="field"><label>Size</label><select class="cf-wsz">'+wSzOpts()+'</select></div><div class="field"><label>Qty</label><input type="number" class="cf-qty" value="1" min="1" max="99"></div><button class="remove-btn" onclick="removeCfmWire(\''+id+'\')">x</button>';document.getElementById('cfm-wires').appendChild(el);}
+function removeCfmWire(id){cfmWires=cfmWires.filter(function(i){return i!==id;});var el=document.getElementById('cfmrow-'+id);if(el)el.remove();}
+function gatherWires(containerId){var total=0,count=0,bk=[];document.querySelectorAll('#'+containerId+' .wire-row').forEach(function(r){var ins=r.querySelector('.cf-ins').value,wsz=r.querySelector('.cf-wsz').value,qty=parseInt(r.querySelector('.cf-qty').value)||0,a=(WIRE_AREA_MAP[ins]||WIRE_AREA)[wsz];if(a&&qty>0){total+=a*qty;count+=qty;bk.push({ins:ins.toUpperCase(),wsz:wsz,qty:qty,area:a*qty});}});return{total:total,count:count,bk:bk};}
+function calcCfill(){
+  var type=document.getElementById('cf-type').value,size=document.getElementById('cf-size').value,row=CONDUIT_TABLE.find(function(r){return r[0]===type&&r[1]===size;});
+  if(!row){document.getElementById('cf-err').textContent='Conduit data not found.';return;}document.getElementById('cf-err').textContent='';
+  var g=gatherWires('cf-wires');
+  if(g.count===0){document.getElementById('cf-err').textContent='Add at least one conductor.';document.getElementById('cf-result').innerHTML='';return;}
+  var condArea=row[2],fillPct=(g.total/condArea)*100,allowedPct=g.count===1?53:g.count===2?31:40,pass=fillPct<=allowedPct;
+  var gc=pass?(fillPct<25?'#4caf50':fillPct<35?'#ff9800':'#ff6f00'):'#f44336';
+  var bkHtml=g.bk.map(function(b){return rr(b.qty+'x '+b.wsz+' AWG '+b.ins,b.area.toFixed(4)+' in2','');}).join('');
+  document.getElementById('cf-result').innerHTML=rb(rh('Fill Analysis')+bkHtml+rr('Total Wire Area',g.total.toFixed(4)+' in2','')+rr('Conduit Area',condArea.toFixed(3)+' in2','')+'<div class="gauge-wrap"><div style="display:flex;justify-content:space-between;font-size:12px;color:#aaa;margin-bottom:4px"><span>Fill: <strong style="color:'+gc+'">'+fillPct.toFixed(1)+'%</strong></span><span>Limit: '+allowedPct+'%</span></div><div class="gauge-bar"><div class="gauge-fill" style="width:'+Math.min(fillPct,100).toFixed(0)+'%;background:'+gc+'"></div></div></div>'+rr('NEC Compliance',pass?'Pass':'Exceeds Limit',pass?'good':'bad'));
+}
+function calcCfMin(){
+  var type=document.getElementById('cfm-type').value,g=gatherWires('cfm-wires');
+  document.getElementById('cfm-err').textContent='';
+  if(g.count===0){document.getElementById('cfm-err').textContent='Add at least one conductor.';return;}
+  var allowedPct=g.count===1?53:g.count===2?31:40,colIdx=g.count===1?3:g.count===2?4:5;
+  var opts=CONDUIT_TABLE.filter(function(r){return r[0]===type;});
+  var match=opts.find(function(r){return r[colIdx]>=g.total;});
+  var bkHtml=g.bk.map(function(b){return rr(b.qty+'x '+b.wsz+' AWG '+b.ins,b.area.toFixed(4)+' in2','');}).join('');
+  if(!match){document.getElementById('cfm-result').innerHTML=rb(rh('Wire Summary')+bkHtml+rr('Total Wire Area',g.total.toFixed(4)+' in2',''))+'<div class="err" style="margin-top:.75rem">No standard '+type+' size fits at '+allowedPct+'% fill.</div>';return;}
+  var actualFill=(g.total/match[2])*100,gc=actualFill<25?'#4caf50':actualFill<35?'#ff9800':'#ff6f00';
+  var mi=opts.indexOf(match),next=opts[mi+1];
+  var nextHtml=next?rn('Next size up: '+next[1]+' -- '+(g.total/next[2]*100).toFixed(1)+'% fill, '+(next[colIdx]-g.total).toFixed(3)+' in2 spare'):'';
+  document.getElementById('cfm-result').innerHTML=rb(rh('Wire Summary')+bkHtml+rr('Total Wire Area',g.total.toFixed(4)+' in2','')+rr('Fill Limit ('+g.count+' wire'+(g.count>1?'s':'')+')',allowedPct+'%',''))+rb(rh('Minimum Conduit Size')+rr('Type',type,'')+rr('Minimum Size','<span style="font-size:18px">'+match[1]+'</span>','good')+rr('Conduit Area',match[2].toFixed(3)+' in2','')+rr('Allowable Fill Area ('+allowedPct+'%)',match[colIdx].toFixed(3)+' in2','')+'<div class="gauge-wrap"><div style="display:flex;justify-content:space-between;font-size:12px;color:#aaa;margin-bottom:4px"><span>Fill: <strong style="color:'+gc+'">'+actualFill.toFixed(1)+'%</strong></span><span>Limit: '+allowedPct+'%</span></div><div class="gauge-bar"><div class="gauge-fill" style="width:'+Math.min(actualFill,100).toFixed(0)+'%;background:'+gc+'"></div></div></div>'+nextHtml);
+}
+
+/* ===== 3. AMPACITY ===== */
+function renderAmpacity(){
+  var szOpts=WIRE_SIZES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+  return '<div class="row"><div class="field"><label>Wire Size</label><select id="amp-size">'+szOpts+'</select></div>'
+    +'<div class="field"><label>Conductor</label><select id="amp-cond"><option value="cu">Copper</option><option value="al">Aluminum</option></select></div></div>'
+    +'<div class="row"><div class="field"><label>Temp Rating</label><select id="amp-temp"><option value="60">60C</option><option value="75" selected>75C</option><option value="90">90C</option></select></div>'
+    +'<div class="field"><label>Ambient Temp (C)</label><input type="number" id="amp-amb" value="30" min="0" max="90"></div></div>'
+    +'<div class="field"><label>Current-Carrying Conductors in Conduit</label><input type="number" id="amp-cccs" value="3" min="1" max="99"></div>'
+    +'<button class="btn" onclick="calcAmpacity()">Calculate</button><div id="amp-result"></div>'
+    +'<div class="result-note">Base ampacity from NEC Table 310.16. Ambient correction per 310.15(B)(2). Fill derating per 310.15(B)(3)(a). Both factors applied simultaneously.</div>';
+}
+function calcAmpacity(){
+  var sz=document.getElementById('amp-size').value,cond=document.getElementById('amp-cond').value,tr=parseInt(document.getElementById('amp-temp').value),amb=parseFloat(document.getElementById('amp-amb').value),cccs=parseInt(document.getElementById('amp-cccs').value);
+  var rowMatch=AMP_TABLE.find(function(r){return r[0].replace(' AWG','').replace(' kcmil','').trim()===sz;});
+  if(!rowMatch){document.getElementById('amp-result').innerHTML='<div class="err">Size not found.</div>';return;}
+  var colIdx=cond==='cu'?(tr===60?1:tr===75?2:3):(tr===60?4:tr===75?5:6),baseAmp=rowMatch[colIdx];
+  if(!baseAmp){document.getElementById('amp-result').innerHTML='<div class="err">No data for this combination.</div>';return;}
+  if(!(amb<tr)){document.getElementById('amp-result').innerHTML='<div class="err">Ambient must be below the '+tr+'C insulation rating.</div>';return;}
+  var Tcf=Math.sqrt((tr-amb)/(tr-30)),fillFactor=1.0;
+  if(cccs>=4){var dr=DERATING.find(function(d){return cccs>=d[0]&&cccs<=d[1];});if(dr)fillFactor=dr[2];}
+  var derated=baseAmp*Tcf*fillFactor;
+  var sc244={cu:{'14':'15 A','12':'20 A','10':'30 A'},al:{'12':'15 A','10':'25 A'}}[cond][sz];
+  document.getElementById('amp-result').innerHTML=rb(rh('Result')+rr('Base Ampacity (310.16)',baseAmp+' A','')+rr('Ambient Correction ('+amb+'C)',Tcf.toFixed(3),'')+rr('Fill Derating ('+cccs+' CCCs)',fillFactor===1?'None':fillFactor.toFixed(2),'')+rr('Derated Ampacity',derated.toFixed(1)+' A','good')+(sc244?rn('NEC 240.4(D): overcurrent protection for this conductor may not exceed '+sc244+' regardless of ampacity (exceptions: motors, certain taps).'):''));
+}
+
+/* ===== 4. BOX FILL ===== */
+function renderBoxfill(){
+  return '<div class="result-note" style="margin-bottom:1rem">NEC 314.16(B): Each conductor volume based on largest conductor entering box. EGCs (2020+): one volume for all, plus 1/4 volume for each EGC over four.</div>'
+    +'<div class="field"><label>Largest Wire Size</label><select id="bf-sz"><option value="2.00">14 AWG (2.00 in3)</option><option value="2.25" selected>12 AWG (2.25 in3)</option><option value="2.50">10 AWG (2.50 in3)</option><option value="3.00">8 AWG (3.00 in3)</option><option value="5.00">6 AWG (5.00 in3)</option></select></div>'
+    +'<div class="row3"><div class="field"><label>Conductors In</label><input type="number" id="bf-cin" value="2" min="0"></div><div class="field"><label>Conductors Out</label><input type="number" id="bf-cout" value="2" min="0"></div><div class="field"><label>Pass-Through</label><input type="number" id="bf-cpt" value="0" min="0"></div></div>'
+    +'<div class="row3"><div class="field"><label>Devices</label><input type="number" id="bf-dev" value="1" min="0"></div><div class="field"><label>Cable Clamps</label><input type="number" id="bf-clamp" value="1" min="0"></div><div class="field"><label>Support Fittings</label><input type="number" id="bf-stud" value="0" min="0"></div></div>'
+    +'<div class="field"><label>EGCs (1 volume; +1/4 each over 4)</label><input type="number" id="bf-egc" value="1" min="0"></div>'
+    +'<button class="btn" onclick="calcBoxFill()">Calculate</button><div id="bf-result"></div>';
+}
+function calcBoxFill(){
+  function bfn(id){return Math.max(0,parseInt(document.getElementById(id).value)||0);}
+  var vol=parseFloat(document.getElementById('bf-sz').value),cin=bfn('bf-cin'),cout=bfn('bf-cout'),cpt=bfn('bf-cpt'),dev=bfn('bf-dev'),clamp=bfn('bf-clamp'),stud=bfn('bf-stud'),egc=bfn('bf-egc');
+  var condVol=(cin+cout+cpt)*vol,devVol=dev*2*vol,clampVol=clamp>0?vol:0,studVol=stud*vol,egcVol=egc>0?vol*(1+Math.max(0,egc-4)*0.25):0,total=condVol+devVol+clampVol+studVol+egcVol;
+  document.getElementById('bf-result').innerHTML=rb(rh('Box Fill')+rr('Conductors ('+(cin+cout+cpt)+'x'+vol+')',condVol.toFixed(2)+' in3','')+rr('Devices ('+dev+'x2x'+vol+')',devVol.toFixed(2)+' in3','')+rr('Clamps / Studs / EGC',(clampVol+studVol+egcVol).toFixed(2)+' in3','')+rr('Minimum Box Volume','<span style="font-size:18px">'+total.toFixed(2)+'</span> in3','good'))+rn('Common: single-gang=18-21 in3 | 4x4 square=21-30 in3 | 4x4 deep=42 in3');
+}
+
+/* ===== 5. POWER / CURRENT ===== */
+function renderPower(){
+  return '<div class="field"><label>Phase</label><select id="pw-phase"><option value="1">Single Phase (1ph)</option><option value="3" selected>Three Phase (3ph)</option></select></div>'
+    +'<div class="row"><div class="field"><label>Voltage (V)</label><select id="pw-volt"><option>120</option><option>208</option><option>240</option><option selected>277</option><option>480</option><option>600</option></select></div>'
+    +'<div class="field"><label>Power Factor</label><input type="number" id="pw-pf" value="0.85" min="0.01" max="1.0" step="0.01"></div></div>'
+    +'<div style="font-size:12px;color:#888;margin-bottom:.75rem">Enter any TWO values below, leave one blank to solve for it.</div>'
+    +'<div class="row3"><div class="field"><label>kVA</label><input type="number" id="pw-kva" placeholder="solve" step="0.01" min="0"></div>'
+    +'<div class="field"><label>kW</label><input type="number" id="pw-kw" placeholder="solve" step="0.01" min="0"></div>'
+    +'<div class="field"><label>Amps</label><input type="number" id="pw-amps" placeholder="solve" step="0.01" min="0"></div></div>'
+    +'<div id="pw-err" class="err"></div><button class="btn" onclick="calcPower()">Calculate</button><div id="pw-result"></div>'
+    +'<div class="result-note">1ph: kVA = V x A / 1000 | 3ph: kVA = 1.732 x V x A / 1000 | kW = kVA x PF</div>';
+}
+function calcPower(){
+  var phase=parseInt(document.getElementById('pw-phase').value),volt=parseFloat(document.getElementById('pw-volt').value),pf=parseFloat(document.getElementById('pw-pf').value);
+  var kva=document.getElementById('pw-kva').value!==''?parseFloat(document.getElementById('pw-kva').value):null;
+  var kw=document.getElementById('pw-kw').value!==''?parseFloat(document.getElementById('pw-kw').value):null;
+  var amps=document.getElementById('pw-amps').value!==''?parseFloat(document.getElementById('pw-amps').value):null;
+  var err=document.getElementById('pw-err');err.textContent='';
+  if(pf<=0||pf>1){err.textContent='PF must be 0.01 to 1.0';return;}
+  if([kva,kw,amps].some(function(v){return v!==null&&!(v>=0);})){err.textContent='Values must be positive numbers.';return;}
+  var known=[kva,kw,amps].filter(function(v){return v!==null;}).length;
+  if(known<2){err.textContent='Enter at least two values.';return;}
+  var mult=phase===3?Math.sqrt(3):1;
+  // Solve: kVA = mult*V*A/1000 | kW = kVA*PF | A = kVA*1000/(mult*V)
+  if(kva!==null&&kw!==null){
+    if(kw>kva+1e-9){err.textContent='kW cannot exceed kVA - check inputs.';return;}
+    if(kva>0)pf=kw/kva;
+    amps=(kva*1000)/(mult*volt);
+  } else if(kva!==null&&amps!==null){
+    kw=kva*pf;
+  } else {
+    kva=(mult*volt*amps)/1000;
+    if(kw>kva+1e-9){err.textContent='Entered kW exceeds the kVA implied by voltage and amps (PF would be over 1.0).';return;}
+    if(kva>0)pf=kw/kva;
+  }
+  var kvar=Math.sqrt(Math.max(0,kva*kva-kw*kw));
+  document.getElementById('pw-result').innerHTML=rb(rh('Result')+rr('Apparent Power',kva.toFixed(3)+' kVA','')+rr('Real Power',kw.toFixed(3)+' kW','')+rr('Reactive Power',kvar.toFixed(3)+' kVAR','')+rr('Current',amps.toFixed(2)+' A','good')+rr('Power Factor',pf.toFixed(3)+' ('+(pf*100).toFixed(1)+'%)',''));
+}
+
+/* ===== 6. CU TO AL ===== */
+function renderCutoal(){
+  var szOpts=WIRE_SIZES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+  return '<div class="row"><div class="field"><label>Direction</label><select id="ca-dir"><option value="ctoal">Copper to Aluminum</option><option value="altoc">Aluminum to Copper</option></select></div>'
+    +'<div class="field"><label>Input Size</label><select id="ca-sz">'+szOpts+'</select></div></div>'
+    +'<button class="btn" onclick="calcCutoal()">Convert</button><div id="ca-result"></div>'
+    +'<div class="result-note">Equivalent sizing per NEC 310.15(B)(16) ampacity matching at 75C.</div>';
+}
+function calcCutoal(){
+  var dir=document.getElementById('ca-dir').value,sz=document.getElementById('ca-sz').value;
+  function getRow(s){return AMP_TABLE.find(function(r){return r[0].replace(' AWG','').replace(' kcmil','').trim()===s;});}
+  if(dir==='ctoal'){
+    var al=CU_TO_AL[sz];if(!al||al==='N/A'){document.getElementById('ca-result').innerHTML='<div class="err">No single aluminum conductor matches '+sz+' copper at 75C - use parallel runs.</div>';return;}
+    var cu=getRow(sz),alR=getRow(al);
+    document.getElementById('ca-result').innerHTML=rb(rh('Result')+rr('Copper Input',sz+' AWG/kcmil','')+rr('Aluminum Equivalent',al+' AWG/kcmil','good')+rr('Cu @75C',cu?cu[2]+'A':'N/A','')+rr('Al @75C',alR?alR[5]+'A':'N/A',''));
+  } else {
+    var cuSz=Object.keys(CU_TO_AL).find(function(k){return CU_TO_AL[k]===sz;});
+    if(!cuSz){document.getElementById('ca-result').innerHTML='<div class="err">No copper equivalent for this aluminum size.</div>';return;}
+    var cuR=getRow(cuSz),alR2=getRow(sz);
+    document.getElementById('ca-result').innerHTML=rb(rh('Result')+rr('Aluminum Input',sz,'')+rr('Copper Equivalent',cuSz,'good')+rr('Al @75C',alR2?alR2[5]+'A':'N/A','')+rr('Cu @75C',cuR?cuR[2]+'A':'N/A',''));
+  }
+}
+
+/* ===== 7. WIRE COLOR CODE ===== */
+var COLOR_SYS={
+  '208':{name:'120/208V 3-Phase Wye',ph:[['A','Black','#161616'],['B','Red','#c62828'],['C','Blue','#1565c0']],rows:[['Phase A','Black','#161616'],['Phase B','Red','#c62828'],['Phase C','Blue','#1565c0'],['Neutral','White','#f5f5f5'],['Ground','Green','#2e7d32']],note:'Common convention for 120/208V wye systems.'},
+  '480':{name:'277/480V 3-Phase Wye',ph:[['A','Brown','#5d4037'],['B','Orange','#ef6c00'],['C','Yellow','#fbc02d']],rows:[['Phase A','Brown','#5d4037'],['Phase B','Orange','#ef6c00'],['Phase C','Yellow','#fbc02d'],['Neutral','Gray','#9e9e9e'],['Ground','Green','#2e7d32']],note:'Common convention for 277/480V wye systems.'},
+  '240':{name:'120/240V Single Phase',ph:[['L1','Black','#161616'],['L2','Red','#c62828']],rows:[['Line 1','Black','#161616'],['Line 2','Red','#c62828'],['Neutral','White','#f5f5f5'],['Ground','Green','#2e7d32']],note:'Standard residential / light commercial.'},
+  'hld':{name:'120/240V 3-Phase High-Leg Delta',ph:[['A','Black','#161616'],['B','Orange','#ef6c00'],['C','Blue','#1565c0']],rows:[['Phase A','Black','#161616'],['Phase B - High Leg (208V to N)','Orange','#ef6c00'],['Phase C','Blue','#1565c0'],['Neutral','White','#f5f5f5'],['Ground','Green','#2e7d32']],note:'NEC 110.15: the high leg must be orange (or otherwise effectively marked); NEC 408.3(E): high leg is the B phase.'}
+};
+function wcTxt(bg){return {'#fbc02d':1,'#9e9e9e':1,'#f5f5f5':1}[bg]?'#111':'#fff';}
+function wcSwatch(bg,w){return '<span style="display:inline-block;width:'+(w||38)+'px;height:16px;border-radius:4px;border:1px solid #555;vertical-align:middle;background:'+bg+'"></span>';}
+/* Panel numbering: odd ckts down the left, even down the right; each row (pair) lands on the same phase bus. 1ph cycles 2 legs, 3ph cycles 3 phases. */
+function wcPhaseOf(n,s){return s.ph[Math.floor((n-1)/2)%s.ph.length];}
+function renderWirecolor(){
+  var opts=Object.keys(COLOR_SYS).map(function(k){return '<option value="'+k+'">'+COLOR_SYS[k].name+'</option>';}).join('');
+  return '<div class="field"><label>System</label><select id="wc-sys" onchange="wcShow()">'+opts+'</select></div><div id="wc-result"></div>'
+    +'<div class="field" style="margin-top:1rem"><label>Circuit Color Lookup (1-1000)</label><input type="number" id="wc-num" min="1" max="1000" placeholder="Enter circuit #" oninput="wcSearch()"></div><div id="wc-search-result"></div>'
+    +'<div id="wc-table"></div>'
+    +'<div class="result-note" style="margin-top:1rem">Standard panelboard numbering: odd circuits down the left, even circuits down the right, each pair on the same phase bus. NEC mandates only: neutral white or gray (200.6), EGC green / green-yellow / bare (250.119), high-leg orange (110.15). Phase colors are industry convention, not code. Verify site or spec standards before pulling.</div>';
+}
+window.wcShow=function(){
+  var s=COLOR_SYS[document.getElementById('wc-sys').value];
+  var rows=s.rows.map(function(r){return '<div class="result-row"><span class="result-label">'+r[0]+'</span><span style="display:grid;grid-template-columns:38px 90px;gap:10px;align-items:center">'+wcSwatch(r[2])+'<span class="result-value" style="text-align:left">'+r[1]+'</span></span></div>';}).join('');
+  document.getElementById('wc-result').innerHTML=rb(rh(s.name)+rows+rn(s.note));
+  var trs='';
+  for(var n=1;n<=199;n+=2){
+    var p=wcPhaseOf(n,s);
+    trs+='<tr><td style="text-align:right;width:80px;font-weight:600">'+n+'</td><td style="padding:4px 10px"><div style="background:'+p[2]+';color:'+wcTxt(p[2])+';border:1px solid #555;border-radius:4px;text-align:center;font-weight:600;font-size:12px;padding:3px 0">'+p[0]+' &middot; '+p[1]+'</div></td><td style="width:80px;font-weight:600">'+(n+1)+'</td></tr>';
+  }
+  document.getElementById('wc-table').innerHTML='<div class="section-label" style="margin-top:1.25rem">Circuits 1-200 - '+s.name+'</div>'
+    +'<div style="max-height:420px;overflow-y:auto;border:1px solid #2a2a2a;border-radius:8px"><table class="ref-table" style="margin:0"><thead style="position:sticky;top:0;z-index:1"><tr><th style="text-align:right">Odd Ckt</th><th style="text-align:center">Phase</th><th>Even Ckt</th></tr></thead><tbody>'+trs+'</tbody></table></div>';
+  wcSearch();
+};
+window.wcSearch=function(){
+  var el=document.getElementById('wc-num'),res=document.getElementById('wc-search-result');
+  if(!el||!res)return;
+  var n=parseInt(el.value);
+  if(!el.value){res.innerHTML='';return;}
+  if(!(n>=1&&n<=1000)){res.innerHTML='<div class="err">Enter a circuit number from 1 to 1000.</div>';return;}
+  var s=COLOR_SYS[document.getElementById('wc-sys').value],p=wcPhaseOf(n,s);
+  res.innerHTML=rb(rr('Circuit '+n,'<span style="display:inline-flex;align-items:center;gap:10px">'+wcSwatch(p[2])+'<span>'+(s.ph.length===2?'Leg ':'Phase ')+p[0]+' - '+p[1]+'</span></span>','good'));
+};
+window['init_wirecolor']=function(){wcShow();};
+
+/* ===== 8. CONDUIT BENDING ===== */
+var BEND_ANGLES=[['10',6.0,'1/16',0.0625],['22.5',2.6,'3/16',0.1875],['30',2.0,'1/4',0.25],['45',1.4,'3/8',0.375],['60',1.2,'1/2',0.5]];
+var STUB_TAKEUP={'1/2"':5,'3/4"':6,'1"':8,'1-1/4"':11};
+var _cbMode='offset';
+function renderConduitbend(){
+  var angOpts=BEND_ANGLES.map(function(a){return '<option value="'+a[0]+'"'+(a[0]==='30'?' selected':'')+'>'+a[0]+'&deg;</option>';}).join('');
+  var szOpts=Object.keys(STUB_TAKEUP).map(function(s){return '<option'+(s==='3/4"'?' selected':'')+'>'+s+'</option>';}).join('');
+  var tradeOpts=CONDUIT_TRADE_SIZES.map(function(s){return '<option'+(s==='3/4"'?' selected':'')+'>'+s+'</option>';}).join('');
+  return '<div class="tab-row"><button class="tab-btn" id="cb-pf-toggle" onclick="cbPrefabToggle(this)">&#128203; Prefab Order Mode: OFF</button></div>'
+    +'<div class="tab-row" id="cb-tabs">'
+    +'<button class="tab-btn active" onclick="cbTab(\'offset\',this)">Offset</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'kick\',this)">Kick</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'saddle\',this)">3-Pt Saddle</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'saddle4\',this)">4-Pt Saddle</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'stub\',this)">Stub-Up (90&deg;)</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'b2b\',this)">Back-to-Back 90s</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'roll\',this)">Rolling Offset</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'par\',this)">Parallel Offsets</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'multi\',this)">Multi-Bend</button></div>'
+    +'<div id="cb-offset"><div class="row"><div class="field"><label>Obstacle Depth (in)</label><input type="number" id="cb-od" value="6" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Bend Angle</label><select id="cb-oa" onchange="cbUpdate()">'+angOpts+'</select></div></div><div id="cb-offset-result"></div></div>'
+    +'<div id="cb-saddle" style="display:none"><div class="row"><div class="field"><label>Obstacle Depth (in)</label><input type="number" id="cb-sd" value="4" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Distance to Obstacle Center (in)</label><input type="number" id="cb-sc" value="30" min="1" step="1" oninput="cbUpdate()"></div></div><div id="cb-saddle-result"></div></div>'
+    +'<div id="cb-stub" style="display:none"><div class="row"><div class="field"><label>Stub Height (in)</label><input type="number" id="cb-sh" value="12" min="1" step="0.5" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>EMT Size (hand bender)</label><select id="cb-ss" onchange="cbUpdate()">'+szOpts+'</select></div></div><div id="cb-stub-result"></div></div>'
+    +'<div id="cb-kick" style="display:none"><div class="row"><div class="field"><label>Kick Offset (in)</label><input type="number" id="cb-kk" value="8" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Kick Angle</label><select id="cb-ka" onchange="cbUpdate()">'+angOpts+'</select></div></div><div id="cb-kick-result"></div></div>'
+    +'<div id="cb-saddle4" style="display:none"><div class="row3"><div class="field"><label>Obstacle Depth (in)</label><input type="number" id="cb-4d" value="4" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Obstacle Width (in)</label><input type="number" id="cb-4w" value="12" min="0.5" step="0.5" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Bend Angle</label><select id="cb-4a" onchange="cbUpdate()">'+angOpts+'</select></div></div><div id="cb-saddle4-result"></div></div>'
+    +'<div id="cb-b2b" style="display:none"><div class="row3"><div class="field"><label>First Stub Height (in)</label><input type="number" id="cb-bh" value="24" min="1" step="0.5" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Back-to-Back Distance (in)</label><input type="number" id="cb-bd" value="60" min="1" step="0.5" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>EMT Size</label><select id="cb-bs" onchange="cbUpdate()">'+szOpts+'</select></div></div><div id="cb-b2b-result"></div></div>'
+    +'<div id="cb-roll" style="display:none"><div class="row3"><div class="field"><label>Rise (in)</label><input type="number" id="cb-rr" value="10" min="0" step="0.25" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Roll (in)</label><input type="number" id="cb-rl" value="6" min="0" step="0.25" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Bend Angle</label><select id="cb-ra" onchange="cbUpdate()">'+angOpts+'</select></div></div><div id="cb-roll-result"></div></div>'
+    +'<div id="cb-par" style="display:none"><div class="row3"><div class="field"><label>Bend Angle</label><select id="cb-pba" onchange="cbUpdate()">'+angOpts+'</select></div>'
+    +'<div class="field"><label>Spacing C-C (in)</label><input type="number" id="cb-pbs" value="2" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label># of Conduits</label><input type="number" id="cb-pbn" value="3" min="2" max="8" oninput="cbUpdate()"></div></div><div id="cb-par-result"></div></div>'
+    +'<div id="cb-multi" style="display:none">'
+    +'<div style="font-size:12px;color:#888;margin-bottom:.5rem">Side-profile view. Length = along the conduit from the previous mark. Take-up/gain not included - marks are bend points.</div>'
+    +'<div id="mb-rows"></div><button class="add-wire-btn" onclick="mbAdd()">+ Add Bend</button>'
+    +'<div class="field"><label>Tail After Last Bend (in)</label><input type="number" id="mb-tail" value="12" min="0" step="0.5" oninput="cbUpdate()"></div>'
+    +'<div id="cb-multi-result"></div></div>'
+    +'<canvas id="cb-cv" width="620" height="220" style="width:100%;border:1px solid #2a2a2a;border-radius:8px;margin-top:1rem;display:block"></canvas>'
+    +'<div id="cb-prefab" style="display:none;margin-top:1.25rem;border-top:1px solid #2e2e2e;padding-top:1rem">'
+    +'<div class="section-label" style="margin-top:0">Prefab Order Details</div>'
+    +'<div class="row"><div class="field"><label>Saved Job</label><select id="cb-pjobsel" onchange="cbPickJob()"></select></div>'
+    +'<div class="field"><label>Saved Requester</label><select id="cb-preqsel" onchange="cbPickReq()"></select></div></div>'
+    +'<div class="row"><div class="field"><label>Job Name</label><input type="text" id="cb-pjob" placeholder="Project / site"></div>'
+    +'<div class="field"><label>Job Number</label><input type="text" id="cb-pjobnum" placeholder="e.g. 24-1187"></div></div>'
+    +'<div class="row"><div class="field"><label>Your Name</label><input type="text" id="cb-pname"></div>'
+    +'<div class="field"><label>Phone Number</label><input type="text" id="cb-pphone"></div></div>'
+    +'<div class="row"><div class="field"><label>Today\'s Date</label><input type="date" id="cb-pdate"></div>'
+    +'<div class="field"><label>Date Needed</label><input type="date" id="cb-pneed"></div></div>'
+    +'<div class="row3"><div class="field"><label>Urgency</label><select id="cb-purg"><option>Standard</option><option>Rush (24-48 hr)</option><option>Emergency / ASAP</option></select></div>'
+    +'<div class="field"><label>Conduit Type</label><select id="cb-ptype"><option>EMT</option><option>IMC</option><option>RMC</option><option>PVC-40</option></select></div>'
+    +'<div class="field"><label>Quantity</label><input type="number" id="cb-pqty" value="1" min="1" max="999"></div></div>'
+    +'<div class="field"><label>Conduit Size</label><select id="cb-psz">'+tradeOpts+'</select></div>'
+    +'<div class="field"><label>Description (optional)</label><textarea id="cb-pdesc" rows="3" placeholder="Kick direction, matching set, delivery location, etc."></textarea></div>'
+    +'<div id="cb-p-err" class="err"></div>'
+    +'<button class="btn" onclick="cbExport(false)">&#128190; Save Form Locally</button>'
+    +'<button class="btn" style="margin-left:8px" onclick="cbExport(true)">&#9993; Email Order</button>'
+    +'<div class="result-note" style="margin-top:.5rem">Email opens your mail app with the order text pre-filled; the form image downloads first - attach it from Downloads (browsers cannot auto-attach files). Job and requester info is saved on this device for reuse.</div>'
+    +'</div>';
+}
+window['init_conduitbend']=function(){
+  _cbMode='offset';_cbPrefab=false;_mbSeq=0;
+  var mr=document.getElementById('mb-rows');
+  mr.innerHTML='';
+  mr.insertAdjacentHTML('beforeend',mbRow(12,'90','up'));
+  mr.insertAdjacentHTML('beforeend',mbRow(30,'90','down'));
+  cbUpdate();
+  var d=new Date();
+  document.getElementById('cb-pdate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  cbMemFill();
+};
+var CB_MODES=['offset','kick','saddle','saddle4','stub','b2b','roll','par','multi'];
+window.cbTab=function(tab,btn){document.querySelectorAll('#cb-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');CB_MODES.forEach(function(m){document.getElementById('cb-'+m).style.display='none';});document.getElementById('cb-'+tab).style.display='block';_cbMode=tab;cbUpdate();};
+window.cbUpdate=function(){var fn={offset:cbOffset,kick:cbKick,saddle:cbSaddle,saddle4:cbSaddle4,stub:cbStub,b2b:cbB2b,roll:cbRoll,par:cbPar,multi:cbMulti}[_cbMode];if(fn)fn();};
+function cbCtx(){var cv=document.getElementById('cb-cv');if(!cv)return null;var ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);ctx.fillStyle='#141414';ctx.fillRect(0,0,cv.width,cv.height);return ctx;}
+function cbMark(ctx,x,y,lbl,above){ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fillStyle='#141414';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#ccc';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText(lbl,x,above?y-14:y+22);}
+function cbPipe(ctx,pts){ctx.strokeStyle='#f90';ctx.lineWidth=5;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();}
+function cbDim(ctx,x,y1,y2,lbl){ctx.strokeStyle='#666';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2);ctx.stroke();[[x,y1],[x,y2]].forEach(function(p){ctx.beginPath();ctx.moveTo(p[0]-4,p[1]);ctx.lineTo(p[0]+4,p[1]);ctx.stroke();});ctx.fillStyle='#aaa';ctx.font='11px system-ui';ctx.textAlign='left';ctx.fillText(lbl,x+8,(y1+y2)/2+4);}
+function cbOffset(){
+  var d=parseFloat(document.getElementById('cb-od').value)||0,angV=document.getElementById('cb-oa').value;
+  var a=BEND_ANGLES.find(function(r){return r[0]===angV;}),res=document.getElementById('cb-offset-result');
+  if(!(d>0)||!a){res.innerHTML='<div class="err">Enter a valid obstacle depth.</div>';return;}
+  var dist=d*a[1],shrink=d*a[3];
+  res.innerHTML=rb(rh('Offset - '+angV+'&deg; Bends')+rr('Multiplier',a[1]+'x','')+rr('Distance Between Marks','<span style="font-size:18px">'+dist.toFixed(2)+'</span> in','good')+rr('Shrink ('+a[2]+'" per inch of depth)',shrink.toFixed(2)+' in','')+rn('Measure to the obstacle, add the shrink, and place mark 1 there; mark 2 is '+dist.toFixed(2)+'" further. Bend both at '+angV+'&deg; in opposite directions, arrows on marks.'));
+  var ctx=cbCtx();if(!ctx)return;
+  var y0=170,y1=70,x1=180,ang=parseFloat(angV)*Math.PI/180,dx=(y0-y1)/Math.tan(ang),x2=Math.min(x1+dx,520);
+  cbPipe(ctx,[[40,y0],[x1,y0],[x2,y1],[580,y1]]);
+  cbMark(ctx,x1,y0,'Mark 1',false);cbMark(ctx,x2,y1,'Mark 2',true);
+  cbDim(ctx,535,y1,y0,d.toFixed(2)+'" depth');
+  ctx.fillStyle='#f90';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(dist.toFixed(2)+'" between marks',(x1+x2)/2,(y0+y1)/2-14);
+  ctx.fillStyle='#888';ctx.font='11px system-ui';ctx.fillText(angV+'°',x1+24,y0-8);
+}
+function cbSaddle(){
+  var d=parseFloat(document.getElementById('cb-sd').value)||0,dc=parseFloat(document.getElementById('cb-sc').value)||0,res=document.getElementById('cb-saddle-result');
+  if(!(d>0)){res.innerHTML='<div class="err">Enter a valid obstacle depth.</div>';return;}
+  var spread=2.5*d,shrink=0.1875*d;
+  res.innerHTML=rb(rh('3-Point Saddle (45&deg; center, 22.5&deg; sides)')+rr('Center Mark',(dc+shrink).toFixed(2)+' in from end','good')+rr('Outer Marks','<span style="font-size:18px">'+spread.toFixed(2)+'</span> in each side of center','good')+rr('Shrink (3/16" per inch of depth)',shrink.toFixed(2)+' in','')+rn('Measured '+dc.toFixed(1)+'" to obstacle center + '+shrink.toFixed(2)+'" shrink. Center bend 45&deg; on the bender notch/rim mark, outer bends 22.5&deg; at the arrow, rotated 180&deg; from center.'));
+  var ctx=cbCtx();if(!ctx)return;
+  var y0=170,yP=90,c=310,o=110;
+  cbPipe(ctx,[[40,y0],[c-o,y0],[c,yP],[c+o,y0],[580,y0]]);
+  cbMark(ctx,c-o,y0,'22.5°',false);cbMark(ctx,c,yP,'45° center',true);cbMark(ctx,c+o,y0,'22.5°',false);
+  cbDim(ctx,c+150,yP,y0,d.toFixed(2)+'" depth');
+  ctx.fillStyle='#f90';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(spread.toFixed(2)+'"',c-o/2,y0-40);ctx.fillText(spread.toFixed(2)+'"',c+o/2,y0-40);
+}
+function cbStub(){
+  var h=parseFloat(document.getElementById('cb-sh').value)||0,sz=document.getElementById('cb-ss').value,tu=STUB_TAKEUP[sz],res=document.getElementById('cb-stub-result');
+  if(!(h>0)){res.innerHTML='<div class="err">Enter a valid stub height.</div>';return;}
+  if(h<=tu){res.innerHTML='<div class="err">Stub height must exceed the '+tu+'" take-up for '+sz+' EMT.</div>';cbCtx();return;}
+  var mark=h-tu;
+  res.innerHTML=rb(rh('90&deg; Stub-Up - '+sz+' EMT')+rr('Take-Up (deduct)',tu+' in','')+rr('Mark From Conduit End','<span style="font-size:18px">'+mark.toFixed(2)+'</span> in','good')+rn('Align the mark with the arrow on the bender head, bend to 90&deg;. Take-ups are for common hand benders - verify the deduct stamped on yours.'));
+  var ctx=cbCtx();if(!ctx)return;
+  var y0=190,xB=440,yT=40;
+  cbPipe(ctx,[[60,y0],[xB,y0],[xB,yT]]);
+  cbMark(ctx,xB-70,y0,'Mark ('+mark.toFixed(1)+'")',false);
+  cbDim(ctx,xB+40,yT,y0,h.toFixed(1)+'" stub');
+  ctx.fillStyle='#888';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText('take-up '+tu+'"',xB-70,y0-16);
+}
+function cbDimH(ctx,y,x1,x2,lbl){ctx.strokeStyle='#666';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();[[x1,y],[x2,y]].forEach(function(p){ctx.beginPath();ctx.moveTo(p[0],p[1]-4);ctx.lineTo(p[0],p[1]+4);ctx.stroke();});ctx.fillStyle='#aaa';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText(lbl,(x1+x2)/2,y-8);}
+function cbKick(){
+  var k=parseFloat(document.getElementById('cb-kk').value)||0,angV=document.getElementById('cb-ka').value,a=BEND_ANGLES.find(function(r){return r[0]===angV;}),res=document.getElementById('cb-kick-result');
+  if(!(k>0)||!a){res.innerHTML='<div class="err">Enter a valid kick offset.</div>';cbCtx();return;}
+  var dist=k*a[1],shrink=k*a[3];
+  res.innerHTML=rb(rh('Kick - single '+angV+'&deg; bend')+rr('Multiplier',a[1]+'x','')+rr('Bend Mark to End of Kick','<span style="font-size:18px">'+dist.toFixed(2)+'</span> in','good')+rr('Shrink',shrink.toFixed(2)+' in','')+rn('Place the bend mark '+dist.toFixed(2)+'" back from where the conduit end must land, bend '+angV+'&deg;. Rotate the conduit in the bender to aim the kick direction.'));
+  var ctx=cbCtx();if(!ctx)return;
+  var y0=170,x1=280,ang=parseFloat(angV)*Math.PI/180,L=Math.min(260,110/Math.sin(ang));
+  var ex=x1+Math.cos(ang)*L,ey=y0-Math.sin(ang)*L;
+  cbPipe(ctx,[[40,y0],[x1,y0],[ex,ey]]);
+  cbMark(ctx,x1,y0,'Mark',false);
+  cbDim(ctx,Math.min(ex+24,585),ey,y0,k.toFixed(2)+'" kick');
+  ctx.fillStyle='#f90';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(dist.toFixed(2)+'" along pipe',(x1+ex)/2-20,(y0+ey)/2-16);
+}
+function cbSaddle4(){
+  var d=parseFloat(document.getElementById('cb-4d').value)||0,w=parseFloat(document.getElementById('cb-4w').value)||0,angV=document.getElementById('cb-4a').value,a=BEND_ANGLES.find(function(r){return r[0]===angV;}),res=document.getElementById('cb-saddle4-result');
+  if(!(d>0)||!(w>0)||!a){res.innerHTML='<div class="err">Enter a valid obstacle depth and width.</div>';cbCtx();return;}
+  var m=d*a[1],shrink1=d*a[3];
+  res.innerHTML=rb(rh('4-Point Saddle - '+angV+'&deg; bends')+rr('Mark 1 to Mark 2',m.toFixed(2)+' in','')+rr('Mark 2 to Mark 3 (over obstacle)',w.toFixed(2)+' in','')+rr('Mark 3 to Mark 4',m.toFixed(2)+' in','')+rr('Total Shrink (both offsets)',(2*shrink1).toFixed(2)+' in','')+rn('Two opposing '+angV+'&deg; offsets. Measure to the NEAR edge of the obstacle and add '+shrink1.toFixed(2)+'" (one offset shrink) to place Mark 1. Bends 1 &amp; 4 kick up, bends 2 &amp; 3 kick down.'));
+  var ctx=cbCtx();if(!ctx)return;
+  cbPipe(ctx,[[40,170],[150,170],[225,95],[395,95],[470,170],[580,170]]);
+  cbMark(ctx,150,170,'1',false);cbMark(ctx,225,95,'2',true);cbMark(ctx,395,95,'3',true);cbMark(ctx,470,170,'4',false);
+  cbDimH(ctx,72,225,395,w.toFixed(2)+'"');
+  cbDim(ctx,535,95,170,d.toFixed(2)+'" depth');
+}
+function cbB2b(){
+  var h=parseFloat(document.getElementById('cb-bh').value)||0,b=parseFloat(document.getElementById('cb-bd').value)||0,sz=document.getElementById('cb-bs').value,tu=STUB_TAKEUP[sz],res=document.getElementById('cb-b2b-result');
+  if(!(h>tu)){res.innerHTML='<div class="err">Stub height must exceed the '+tu+'" take-up for '+sz+' EMT.</div>';cbCtx();return;}
+  if(!(b>2*tu)){res.innerHTML='<div class="err">Back-to-back distance too short for two '+sz+' 90s.</div>';cbCtx();return;}
+  res.innerHTML=rb(rh('Back-to-Back 90s - '+sz+' EMT')+rr('First 90 - Mark From End',(h-tu).toFixed(2)+' in','good')+rr('Back-to-Back Distance',b.toFixed(2)+' in','')+rr('Second 90 - Mark','<span style="font-size:18px">'+b.toFixed(2)+'</span>" from BACK of first 90','good')+rn('Bend the first 90 normally (arrow on mark). For the second, measure from the back of the first 90, mark, then align the mark with the STAR POINT with the bender reversed (hook facing the first 90).'));
+  var ctx=cbCtx();if(!ctx)return;
+  cbPipe(ctx,[[150,45],[150,170],[470,170],[470,45]]);
+  cbMark(ctx,150,170,'90 #1',false);cbMark(ctx,470,170,'90 #2',false);
+  cbDimH(ctx,60,150,470,b.toFixed(2)+'" back-to-back');
+  cbDim(ctx,95,45,170,h.toFixed(1)+'"');
+}
+function cbRoll(){
+  var ri=parseFloat(document.getElementById('cb-rr').value)||0,ro=parseFloat(document.getElementById('cb-rl').value)||0,angV=document.getElementById('cb-ra').value,a=BEND_ANGLES.find(function(r){return r[0]===angV;}),res=document.getElementById('cb-roll-result');
+  var t=Math.sqrt(ri*ri+ro*ro);
+  if(!(t>0)||!a){res.innerHTML='<div class="err">Enter a rise and/or roll greater than 0.</div>';cbCtx();return;}
+  var dist=t*a[1],shrink=t*a[3],rot=Math.atan2(ro,ri)*180/Math.PI;
+  res.innerHTML=rb(rh('Rolling Offset - '+angV+'&deg; bends')+rr('True Offset','<span style="font-size:18px">'+t.toFixed(2)+'</span> in','good')+rr('Distance Between Marks',dist.toFixed(2)+' in','good')+rr('Shrink',shrink.toFixed(2)+' in','')+rr('Bender Rotation',rot.toFixed(1)+'&deg; from plumb','')+rn('Mark like a normal offset using the true offset, then rotate the conduit '+rot.toFixed(0)+'&deg; in the bender for BOTH bends to hit the rise and roll together.'));
+  var ctx=cbCtx();if(!ctx)return;
+  var Ax=230,Ay=50,By=175,Cx=440;
+  ctx.strokeStyle='#888';ctx.lineWidth=2;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.moveTo(Ax,Ay);ctx.lineTo(Ax,By);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(Ax,By);ctx.lineTo(Cx,By);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='#f90';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(Ax,Ay);ctx.lineTo(Cx,By);ctx.stroke();
+  ctx.fillStyle='#aaa';ctx.font='12px system-ui';ctx.textAlign='right';ctx.fillText('rise '+ri.toFixed(1)+'"',Ax-8,(Ay+By)/2);
+  ctx.textAlign='center';ctx.fillText('roll '+ro.toFixed(1)+'"',(Ax+Cx)/2,By+18);
+  ctx.fillStyle='#f90';ctx.fillText('true offset '+t.toFixed(2)+'"',(Ax+Cx)/2+40,(Ay+By)/2-14);
+}
+function cbPar(){
+  var angV=document.getElementById('cb-pba').value,a=BEND_ANGLES.find(function(r){return r[0]===angV;}),sp=parseFloat(document.getElementById('cb-pbs').value)||0,n=parseInt(document.getElementById('cb-pbn').value)||0,res=document.getElementById('cb-par-result');
+  if(!a||!(sp>0)||!(n>=2)){res.innerHTML='<div class="err">Enter spacing and at least 2 conduits.</div>';cbCtx();return;}
+  n=Math.min(n,8);
+  var adder=Math.tan(parseFloat(angV)/2*Math.PI/180)*sp,rows='';
+  for(var i=2;i<=n;i++)rows+=rr('Conduit '+i,'shift marks +'+((i-1)*adder).toFixed(2)+'"','');
+  res.innerHTML=rb(rh('Parallel Offsets - '+angV+'&deg;, '+n+' runs @ '+sp+'" c-c')+rr('Adder per Conduit','<span style="font-size:18px">'+adder.toFixed(3)+'</span> in','good')+rows+rn('Adder = tan('+angV+'&deg;/2) x spacing. Lay out conduit 1 normally, then shift BOTH marks of each following conduit ahead by the adder so the bends nest parallel through the turn.'));
+  var ctx=cbCtx();if(!ctx)return;
+  var apx=Math.min(30,adder*12);
+  for(var k2=0;k2<Math.min(n,3);k2++){
+    var s2=k2*apx,yv=k2*16;
+    ctx.strokeStyle=k2===0?'#f90':'rgba(255,153,0,'+(0.55-k2*0.18)+')';ctx.lineWidth=4;ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(40+s2,180-yv);ctx.lineTo(200+s2,180-yv);ctx.lineTo(300+s2,95-yv);ctx.lineTo(560,95-yv);ctx.stroke();
+  }
+  ctx.fillStyle='#888';ctx.font='11px system-ui';ctx.textAlign='left';ctx.fillText('marks shift by the adder each run',40,40);
+}
+/* --- MULTI-BEND BUILDER --- */
+var _mbSeq=0;
+var MB_ANG=['10','22.5','30','45','60','90'];
+function mbRow(len,ang,dir){
+  _mbSeq++;var id='mb'+_mbSeq;
+  return '<div class="wire-row" id="mbrow-'+id+'">'
+    +'<div class="field"><label>Length to Bend (in)</label><input type="number" class="mb-len" value="'+len+'" min="0.5" step="0.5" oninput="cbUpdate()"></div>'
+    +'<div class="field"><label>Angle</label><select class="mb-ang" onchange="cbUpdate()">'+MB_ANG.map(function(a){return '<option'+(a===ang?' selected':'')+'>'+a+'</option>';}).join('')+'</select></div>'
+    +'<div class="field"><label>Direction</label><select class="mb-dir" onchange="cbUpdate()"><option value="up"'+(dir==='up'?' selected':'')+'>Up</option><option value="down"'+(dir==='down'?' selected':'')+'>Down</option></select></div>'
+    +'<button class="remove-btn" onclick="mbDel(\''+id+'\')">x</button></div>';
+}
+window.mbAdd=function(){document.getElementById('mb-rows').insertAdjacentHTML('beforeend',mbRow(24,'30','up'));cbUpdate();};
+window.mbDel=function(id){var el=document.getElementById('mbrow-'+id);if(el)el.remove();cbUpdate();};
+function mbCalc(){
+  var rowEls=[].slice.call(document.querySelectorAll('#mb-rows .wire-row'));
+  if(!rowEls.length)return null;
+  var bends=rowEls.map(function(r){return {len:parseFloat(r.querySelector('.mb-len').value)||0,ang:parseFloat(r.querySelector('.mb-ang').value),dir:r.querySelector('.mb-dir').value};});
+  if(bends.some(function(b){return !(b.len>0);}))return null;
+  var tail=parseFloat(document.getElementById('mb-tail').value)||0;
+  var pts=[[0,0]],hdg=0,cum=0,marks=[];
+  bends.forEach(function(b,i){
+    var p=pts[pts.length-1],x=p[0]+Math.cos(hdg)*b.len,y=p[1]+Math.sin(hdg)*b.len;
+    cum+=b.len;marks.push({idx:i+1,cum:cum,ang:b.ang,dir:b.dir,x:x,y:y});
+    pts.push([x,y]);
+    hdg+=(b.dir==='up'?-1:1)*b.ang*Math.PI/180;
+  });
+  var pe=pts[pts.length-1];
+  pts.push([pe[0]+Math.cos(hdg)*tail,pe[1]+Math.sin(hdg)*tail]);
+  var end=pts[pts.length-1];
+  return {marks:marks,total:cum+tail,rise:-end[1],run:end[0],pts:pts};
+}
+function cbMulti(){
+  var res=document.getElementById('cb-multi-result'),m=mbCalc();
+  if(!m){res.innerHTML='<div class="err">Add at least one bend; every bend needs a length greater than 0.</div>';cbCtx();return;}
+  var rows=m.marks.map(function(k){return rr('Bend '+k.idx+' - '+k.ang+'&deg; '+(k.dir==='up'?'Up':'Down'),'mark @ '+k.cum.toFixed(2)+'" from start','');}).join('');
+  res.innerHTML=rb(rh('Bend Schedule (measured from starting end)')+rows
+    +rr('Total Conduit (marks + tail)','<span style="font-size:18px">'+m.total.toFixed(2)+'</span> in',m.total>120?'warn':'good')
+    +(m.total>120?rr('Stick Check','Over one 10\' stick - needs a coupling or longer stick','warn'):rr('Stick Check','Fits one 10\' stick','good'))
+    +rr('End Point','+'+m.run.toFixed(1)+'" run / '+(m.rise>=0?'+':'')+m.rise.toFixed(1)+'" rise','')
+    +rn('Marks measured along the conduit; bend take-up/gain not included. Good for layout - verify the first bend on scrap for tight work.'));
+  var ctx=cbCtx();if(!ctx)return;
+  var W=620,H=220,P=42;
+  var xs=m.pts.map(function(p){return p[0];}),ys=m.pts.map(function(p){return p[1];});
+  var minX=Math.min.apply(null,xs),maxX=Math.max.apply(null,xs),minY=Math.min.apply(null,ys),maxY=Math.max.apply(null,ys);
+  var sc=Math.min((W-2*P)/Math.max(maxX-minX,0.001),(H-2*P)/Math.max(maxY-minY,0.001));
+  function T(p){return [P+(p[0]-minX)*sc,P+(p[1]-minY)*sc];}
+  cbPipe(ctx,m.pts.map(T));
+  m.marks.forEach(function(k,i){var t=T([k.x,k.y]);cbMark(ctx,t[0],t[1],'#'+k.idx,i%2===0);});
+  var s0=T(m.pts[0]);
+  ctx.fillStyle='#888';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText('START',s0[0],Math.min(s0[1]+20,H-6));
+}
+
+/* --- PREFAB ORDER MODE --- */
+var _cbPrefab=false;
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+window.cbPrefabToggle=function(btn){
+  _cbPrefab=!_cbPrefab;
+  btn.classList.toggle('active',_cbPrefab);
+  btn.innerHTML='&#128203; Prefab Order Mode: '+(_cbPrefab?'ON':'OFF');
+  document.getElementById('cb-prefab').style.display=_cbPrefab?'block':'none';
+  if(_cbPrefab)cbMemFill();
+};
+function cbMem(){try{return JSON.parse(localStorage.getItem('ecbPrefabMem'))||{jobs:[],reqs:[],last:null};}catch(e){return {jobs:[],reqs:[],last:null};}}
+function cbMemSave(m){try{localStorage.setItem('ecbPrefabMem',JSON.stringify(m));}catch(e){}}
+function cbMemFill(pfx){
+  pfx=pfx||'cb';
+  function g(id){return document.getElementById(pfx+id);}
+  var m=cbMem(),js=g('-pjobsel'),rs=g('-preqsel');
+  if(!js||!rs)return;
+  js.innerHTML='<option value="">-- saved jobs --</option>'+m.jobs.map(function(j,i){return '<option value="'+i+'">'+escH(j.name)+(j.num?' ('+escH(j.num)+')':'')+'</option>';}).join('');
+  rs.innerHTML='<option value="">-- saved requesters --</option>'+m.reqs.map(function(r,i){return '<option value="'+i+'">'+escH(r.name)+(r.phone?' - '+escH(r.phone):'')+'</option>';}).join('');
+  if(m.last){
+    var L=m.last;
+    if(g('-pjob')&&!g('-pjob').value)g('-pjob').value=L.job||'';
+    if(g('-pjobnum')&&!g('-pjobnum').value)g('-pjobnum').value=L.num||'';
+    if(g('-pname')&&!g('-pname').value)g('-pname').value=L.name||'';
+    if(g('-pphone')&&!g('-pphone').value)g('-pphone').value=L.phone||'';
+    if(L.urg&&g('-purg'))g('-purg').value=L.urg;
+    if(L.ctype&&g('-ptype'))g('-ptype').value=L.ctype;
+    if(L.csz&&g('-psz'))g('-psz').value=L.csz;
+  }
+}
+window.cbPickJob=function(pfx){pfx=pfx||'cb';var i=document.getElementById(pfx+'-pjobsel').value;if(i==='')return;var j=cbMem().jobs[+i];if(!j)return;document.getElementById(pfx+'-pjob').value=j.name;document.getElementById(pfx+'-pjobnum').value=j.num;};
+window.cbPickReq=function(pfx){pfx=pfx||'cb';var i=document.getElementById(pfx+'-preqsel').value;if(i==='')return;var r=cbMem().reqs[+i];if(!r)return;document.getElementById(pfx+'-pname').value=r.name;document.getElementById(pfx+'-pphone').value=r.phone;};
+function cbRemember(f,pfx){
+  var m=cbMem();
+  if(f.job&&!m.jobs.some(function(j){return j.name===f.job&&j.num===f.num;}))m.jobs.unshift({name:f.job,num:f.num});
+  if(f.name&&!m.reqs.some(function(r){return r.name===f.name&&r.phone===f.phone;}))m.reqs.unshift({name:f.name,phone:f.phone});
+  m.jobs=m.jobs.slice(0,15);m.reqs=m.reqs.slice(0,15);
+  m.last={job:f.job,num:f.num,name:f.name,phone:f.phone,urg:f.urg,ctype:f.ctype,csz:f.csz};
+  cbMemSave(m);cbMemFill(pfx);
+}
+function cbSpec(){
+  function nv(id){return parseFloat(document.getElementById(id).value)||0;}
+  function sv(id){return document.getElementById(id).value;}
+  function av(id){return BEND_ANGLES.find(function(r){return r[0]===sv(id);});}
+  if(_cbMode==='offset'){
+    var d=nv('cb-od'),a=av('cb-oa');
+    if(!(d>0)||!a)return null;
+    return {type:'Offset',rows:[['Bend Type','Offset - two '+sv('cb-oa')+' deg bends'],['Obstacle Depth',d.toFixed(2)+'"'],['Distance Between Bends',(d*a[1]).toFixed(2)+'"'],['Shrink',(d*a[3]).toFixed(2)+'"']]};
+  }
+  if(_cbMode==='kick'){
+    var k=nv('cb-kk'),ak=av('cb-ka');
+    if(!(k>0)||!ak)return null;
+    return {type:'Kick',rows:[['Bend Type','Kick - single '+sv('cb-ka')+' deg bend'],['Kick Offset',k.toFixed(2)+'"'],['Bend Mark to End',(k*ak[1]).toFixed(2)+'"'],['Shrink',(k*ak[3]).toFixed(2)+'"']]};
+  }
+  if(_cbMode==='saddle'){
+    var sd=nv('cb-sd'),dc=nv('cb-sc');
+    if(!(sd>0))return null;
+    var shrink=0.1875*sd;
+    return {type:'3-Point Saddle',rows:[['Bend Type','3-Pt Saddle - 45 deg center, 22.5 deg sides'],['Obstacle Depth',sd.toFixed(2)+'"'],['Center Mark',(dc+shrink).toFixed(2)+'" from end'],['Outer Bends',(2.5*sd).toFixed(2)+'" each side of center'],['Shrink',shrink.toFixed(2)+'"']]};
+  }
+  if(_cbMode==='saddle4'){
+    var d4=nv('cb-4d'),w4=nv('cb-4w'),a4=av('cb-4a');
+    if(!(d4>0)||!(w4>0)||!a4)return null;
+    return {type:'4-Point Saddle',rows:[['Bend Type','4-Pt Saddle - four '+sv('cb-4a')+' deg bends'],['Obstacle Depth / Width',d4.toFixed(2)+'" / '+w4.toFixed(2)+'"'],['Marks 1-2 and 3-4',(d4*a4[1]).toFixed(2)+'"'],['Marks 2-3 (over obstacle)',w4.toFixed(2)+'"'],['Total Shrink',(2*d4*a4[3]).toFixed(2)+'"']]};
+  }
+  if(_cbMode==='stub'){
+    var h=nv('cb-sh'),sz=sv('cb-ss'),tu=STUB_TAKEUP[sz];
+    if(!(h>tu))return null;
+    return {type:'90 Stub-Up',rows:[['Bend Type','90 deg Stub-Up'],['Stub Height',h.toFixed(2)+'"'],['Take-Up ('+sz+' EMT bender)',tu+'"'],['Mark From End',(h-tu).toFixed(2)+'"']]};
+  }
+  if(_cbMode==='b2b'){
+    var bh=nv('cb-bh'),bd=nv('cb-bd'),bs=sv('cb-bs'),btu=STUB_TAKEUP[bs];
+    if(!(bh>btu)||!(bd>2*btu))return null;
+    return {type:'Back-to-Back 90s',rows:[['Bend Type','Two 90 deg bends, back to back'],['First Stub Height',bh.toFixed(2)+'" ('+bs+' EMT)'],['First Mark From End',(bh-btu).toFixed(2)+'"'],['Second Mark',bd.toFixed(2)+'" from back of first 90 (star point)']]};
+  }
+  if(_cbMode==='roll'){
+    var ri=nv('cb-rr'),ro=nv('cb-rl'),ar=av('cb-ra'),t=Math.sqrt(ri*ri+ro*ro);
+    if(!(t>0)||!ar)return null;
+    return {type:'Rolling Offset',rows:[['Bend Type','Rolling Offset - two '+sv('cb-ra')+' deg bends'],['Rise / Roll',ri.toFixed(2)+'" / '+ro.toFixed(2)+'"'],['True Offset',t.toFixed(2)+'"'],['Distance Between Bends',(t*ar[1]).toFixed(2)+'"'],['Bender Rotation',(Math.atan2(ro,ri)*180/Math.PI).toFixed(1)+' deg from plumb']]};
+  }
+  if(_cbMode==='par'){
+    var ap=av('cb-pba'),sp=nv('cb-pbs'),cnt=Math.min(parseInt(document.getElementById('cb-pbn').value)||0,8);
+    if(!ap||!(sp>0)||!(cnt>=2))return null;
+    var adder=Math.tan(parseFloat(sv('cb-pba'))/2*Math.PI/180)*sp;
+    var prow=[['Bend Type','Parallel Offsets - '+sv('cb-pba')+' deg, '+cnt+' runs'],['Spacing',sp.toFixed(2)+'" c-c'],['Adder per Conduit',adder.toFixed(3)+'"']];
+    for(var i=2;i<=cnt;i++)prow.push(['Conduit '+i,'shift marks +'+((i-1)*adder).toFixed(2)+'"']);
+    return {type:'Parallel Offsets',rows:prow};
+  }
+  var m=mbCalc();
+  if(!m)return null;
+  var mrow=[['Bend Type','Multi-Bend - '+m.marks.length+' bends']];
+  m.marks.forEach(function(km){mrow.push(['Bend '+km.idx+' ('+km.ang+' deg '+km.dir+')','mark @ '+km.cum.toFixed(2)+'" from start']);});
+  mrow.push(['Total Conduit',m.total.toFixed(2)+'"']);
+  mrow.push(['End Point','+'+m.run.toFixed(1)+'" run / '+m.rise.toFixed(1)+'" rise']);
+  return {type:'Multi-Bend',rows:mrow};
+}
+function cbFmtDate(iso){if(!iso)return '-';var p=iso.split('-');return p.length===3?(+p[1])+'/'+(+p[2])+'/'+p[0]:iso;}
+function cbBuildForm(spec,f){
+  var W=850,specPairs=1+Math.ceil(spec.rows.length/2);
+  var H=Math.max(1100,112+3*84+32+specPairs*52+314+(f.desc?150:0)+50);
+  var cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  var ctx=cv.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#111';ctx.fillRect(0,0,W,72);
+  ctx.fillStyle='#f90';ctx.font='bold 26px system-ui';ctx.textAlign='left';ctx.fillText('PREFAB BEND ORDER',30,46);
+  var uc=f.urg.indexOf('Emergency')===0?'#c62828':f.urg.indexOf('Rush')===0?'#ef6c00':'#2e7d32';
+  ctx.fillStyle=uc;ctx.fillRect(W-260,19,230,34);
+  ctx.fillStyle='#fff';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText(f.urg.toUpperCase(),W-145,41);
+  var y=112;
+  function sect(t){ctx.fillStyle='#eee';ctx.fillRect(30,y-19,W-60,27);ctx.fillStyle='#333';ctx.font='bold 13px system-ui';ctx.textAlign='left';ctx.fillText(t,40,y);y+=32;}
+  function pair(x,l,vv){ctx.fillStyle='#888';ctx.font='11px system-ui';ctx.textAlign='left';ctx.fillText(l.toUpperCase(),x,y);ctx.fillStyle='#111';ctx.font='600 16px system-ui';ctx.fillText(vv&&String(vv).trim()?String(vv):'-',x,y+21);}
+  function row2(l1,v1,l2,v2){pair(40,l1,v1);if(l2!==undefined)pair(440,l2,v2);y+=52;}
+  sect('ORDER INFO');
+  row2('Date',cbFmtDate(f.date),'Date Needed',cbFmtDate(f.need));
+  sect('JOB');
+  row2('Job Name',f.job,'Job Number',f.num);
+  sect('REQUESTED BY');
+  row2('Name',f.name,'Phone',f.phone);
+  sect('BEND SPECIFICATION');
+  row2('Conduit',f.ctype+' '+f.csz,'Quantity',f.qty);
+  for(var i=0;i<spec.rows.length;i+=2){row2(spec.rows[i][0],spec.rows[i][1],spec.rows[i+1]?spec.rows[i+1][0]:undefined,spec.rows[i+1]?spec.rows[i+1][1]:undefined);}
+  sect('DIAGRAM');
+  var src=document.getElementById('cb-cv');
+  ctx.fillStyle='#141414';ctx.fillRect(40,y-14,W-80,272);
+  if(src)ctx.drawImage(src,40,y-14,W-80,272);
+  ctx.strokeStyle='#ccc';ctx.lineWidth=1;ctx.strokeRect(40,y-14,W-80,272);
+  y+=282;
+  if(f.desc){
+    sect('DESCRIPTION / NOTES');
+    ctx.fillStyle='#111';ctx.font='14px system-ui';
+    var words=f.desc.split(/\s+/),line='',lines=0;
+    for(var w=0;w<words.length&&lines<5;w++){
+      var test=line?line+' '+words[w]:words[w];
+      if(ctx.measureText(test).width>W-90){ctx.fillText(line,40,y);y+=20;lines++;line=words[w];}
+      else line=test;
+    }
+    if(line&&lines<5){ctx.fillText(line,40,y);y+=20;}
+  }
+  ctx.fillStyle='#999';ctx.font='11px system-ui';ctx.textAlign='left';
+  ctx.fillText('Generated by Electrical Field Toolkit - '+new Date().toLocaleString(),30,H-20);
+  return cv;
+}
+window.cbExport=function(email){
+  var err=document.getElementById('cb-p-err');err.textContent='';
+  cbUpdate();
+  var spec=cbSpec();
+  if(!spec){err.textContent='Fix the bend inputs above first - the current bend is not valid.';return;}
+  function v(id){return document.getElementById(id).value.trim();}
+  var f={job:v('cb-pjob'),num:v('cb-pjobnum'),name:v('cb-pname'),phone:v('cb-pphone'),date:v('cb-pdate'),need:v('cb-pneed'),urg:v('cb-purg'),ctype:v('cb-ptype'),csz:v('cb-psz'),qty:v('cb-pqty')||'1',desc:v('cb-pdesc')};
+  if(!f.job||!f.name||!f.need){err.textContent='Job name, your name, and date needed are required.';return;}
+  cbRemember(f);
+  var cv=cbBuildForm(spec,f);
+  var fname=('prefab_'+(f.num||f.job)+'_'+spec.type+'_'+f.date).replace(/[^\w.-]+/g,'_')+'.png';
+  cv.toBlob(function(b){
+    var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);},5000);
+  });
+  if(email){
+    var lines=['PREFAB BEND ORDER - '+f.urg,'','Job: '+f.job+(f.num?' (#'+f.num+')':''),'Requested by: '+f.name+(f.phone?' / '+f.phone:''),'Date: '+cbFmtDate(f.date)+'   Needed by: '+cbFmtDate(f.need),'','Conduit: '+f.ctype+' '+f.csz+'   Qty: '+f.qty];
+    spec.rows.forEach(function(r){lines.push(r[0]+': '+r[1]);});
+    if(f.desc)lines.push('','Notes: '+f.desc);
+    lines.push('','The order form image ('+fname+') was just downloaded - please attach it to this email before sending.');
+    location.href='mailto:?subject='+encodeURIComponent('Prefab Bend Order - '+f.job+' - '+spec.type+(f.urg!=='Standard'?' ['+f.urg+']':''))+'&body='+encodeURIComponent(lines.join('\r\n'));
+  }
+};
+
+/* ===== 9. GENERATOR FUEL ===== */
+function renderGenfuel(){
+  var kwOpts=GEN_DATA.map(function(r){return '<option value="'+r[0]+'">'+r[0]+' kW</option>';}).join('');
+  return '<div class="result-note" style="margin-bottom:1rem">Diesel consumption based on Cummins/Cat/Kohler published data. Add 10-15% contingency for bidding. Diesel only.</div>'
+    +'<div class="row"><div class="field"><label>Generator Size</label><select id="gf-kw" onchange="gfUpdate()"><option value="custom">Enter Custom kW</option>'+kwOpts+'</select></div>'
+    +'<div class="field" id="gf-cw-wrap" style="display:none"><label>Custom kW</label><input type="number" id="gf-ckw" value="800" min="10" max="5000" step="10" oninput="gfUpdate()"></div>'
+    +'<div class="field"><label>Tank Size (gal, optional)</label><input type="number" id="gf-tank" value="500" min="0" step="10" oninput="gfUpdate()"></div></div>'
+    +'<div class="row"><div class="field"><label>Test Duration (hours)</label><input type="number" id="gf-hours" value="4" min="0.5" step="0.5" oninput="gfUpdate()"></div>'
+    +'<div class="field"><label>Contingency %</label><select id="gf-cont" onchange="gfUpdate()"><option value="0">0%</option><option value="10" selected>10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option></select></div></div>'
+    +'<div class="field"><label>Load Profile</label><select id="gf-profile" onchange="gfUpdate()"><option value="step">Step Load (25% to 50% to 75% to 100%, equal time)</option><option value="25">25% Constant</option><option value="50">50% Constant</option><option value="75">75% Constant (NFPA 110)</option><option value="100">100% Constant</option><option value="custom">Custom Load %</option></select></div>'
+    +'<div class="field" id="gf-cl-wrap" style="display:none"><label>Custom Load %</label><input type="number" id="gf-cload" value="80" min="10" max="100" step="5" oninput="gfUpdate()"></div>'
+    +'<div id="gf-result"></div>'
+    +'<div class="result-note" style="margin-top:1rem">NFPA 110 Level 1: monthly 30-min exercise at min 30% load; annual load bank test at 75% for 4 hours if monthly test fails threshold.</div>';
+}
+window['init_genfuel']=function(){gfUpdate();};
+function gfInterp(kw){
+  if(kw<=GEN_DATA[0][0]) return GEN_DATA[0];
+  if(kw>=GEN_DATA[GEN_DATA.length-1][0]) return GEN_DATA[GEN_DATA.length-1];
+  var lo=0,hi=GEN_DATA.length-1;
+  for(var i=0;i<GEN_DATA.length-1;i++){
+    if(GEN_DATA[i][0]<=kw&&GEN_DATA[i+1][0]>=kw){lo=i;hi=i+1;break;}
+  }
+  if(GEN_DATA[hi][0]===kw) return GEN_DATA[hi];
+  var frac=(kw-GEN_DATA[lo][0])/(GEN_DATA[hi][0]-GEN_DATA[lo][0]);
+  return [kw,
+    GEN_DATA[lo][1]+(GEN_DATA[hi][1]-GEN_DATA[lo][1])*frac,
+    GEN_DATA[lo][2]+(GEN_DATA[hi][2]-GEN_DATA[lo][2])*frac,
+    GEN_DATA[lo][3]+(GEN_DATA[hi][3]-GEN_DATA[lo][3])*frac,
+    GEN_DATA[lo][4]+(GEN_DATA[hi][4]-GEN_DATA[lo][4])*frac];
+}
+function gfGph(row,pct){if(pct<=25)return row[1]*(pct/25);if(pct<=50)return row[1]+(row[2]-row[1])*((pct-25)/25);if(pct<=75)return row[2]+(row[3]-row[2])*((pct-50)/25);return row[3]+(row[4]-row[3])*((pct-75)/25);}
+function gfUpdate(){
+  var kwSel=document.getElementById('gf-kw').value,isC=kwSel==='custom';
+  document.getElementById('gf-cw-wrap').style.display=isC?'block':'none';
+  var kw=isC?(parseFloat(document.getElementById('gf-ckw').value)||800):parseFloat(kwSel);
+  var profile=document.getElementById('gf-profile').value,isCI=profile==='custom';
+  document.getElementById('gf-cl-wrap').style.display=isCI?'block':'none';
+  var hours=parseFloat(document.getElementById('gf-hours').value)||4,tank=parseFloat(document.getElementById('gf-tank').value)||0,cont=parseFloat(document.getElementById('gf-cont').value)/100;
+  var row=gfInterp(kw);
+  var barHtml='';
+  [25,50,75,100].forEach(function(load,i){
+    var gph=row[i+1],pct=(gph/row[4])*100,bc=load===100?'#f44336':load===75?'#ff9800':load===50?'#f90':'#4caf50';
+    barHtml+='<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:#aaa;margin-bottom:3px"><span><strong style="color:#e0e0e0">'+load+'% Load</strong> - '+(kw*load/100).toFixed(0)+' kW</span><span><strong style="color:'+bc+'">'+gph.toFixed(1)+' GPH</strong> / '+(gph*hours).toFixed(1)+' gal in '+hours+'hr</span></div><div class="gauge-bar" style="height:12px"><div class="gauge-fill" style="width:'+pct.toFixed(0)+'%;background:'+bc+';height:100%"></div></div></div>';
+  });
+  var totalGal=0,stepRows='';
+  if(profile==='step'){
+    var steps=[{l:'25% Load',g:row[1],h:hours/4},{l:'50% Load',g:row[2],h:hours/4},{l:'75% Load',g:row[3],h:hours/4},{l:'100% Load',g:row[4],h:hours/4}];
+    steps.forEach(function(s){totalGal+=s.g*s.h;stepRows+=rr(s.l+' - '+(s.h).toFixed(1)+'hr',s.g.toFixed(1)+' GPH x '+(s.h).toFixed(1)+'hr = '+(s.g*s.h).toFixed(1)+' gal','');});
+  } else {
+    var lpct=isCI?(parseFloat(document.getElementById('gf-cload').value)||80):parseFloat(profile);
+    var gph2=gfGph(row,lpct);totalGal=gph2*hours;
+    stepRows=rr(lpct+'% Load - '+hours+'hr',gph2.toFixed(1)+' GPH x '+hours+'hr = '+totalGal.toFixed(1)+' gal','');
+  }
+  var total2=totalGal*(1+cont),tankPct=tank>0?(total2/tank)*100:null;
+  var tankHtml=tank>0?rr('Tank Usage ('+tank+' gal)',tankPct.toFixed(1)+'% of tank',tankPct>90?'bad':tankPct>70?'warn':'good')+'':'' ;
+  document.getElementById('gf-result').innerHTML=rb(rh('GPH at Each Load - '+kw+' kW')+barHtml)+rb(rh('Test Duration Estimate')+stepRows+rr('Subtotal',totalGal.toFixed(1)+' gal','')+rr('With '+(cont*100).toFixed(0)+'% Contingency','<span style="font-size:18px">'+total2.toFixed(1)+'</span> gal','good')+tankHtml)+rb(rh('Bid Summary')+rr('Fuel to Budget',Math.ceil(total2)+' gal','good')+rn('Round up to nearest full delivery (min 100-200 gal typical). Confirm local diesel pricing.'));
+}
+
+/* ===== 10. PULL BOX SIZING & CUSTOM BOX ORDERS ===== */
+(function(){
+  var box={shape:'rect',W:24,H:18,D:8,nc:'TR',nw:10,nh:8};
+  var conduits=[],nextId=1,drag=null,_pbPrefab=false,_side=null,_selId=null;
+  var INCH=CONDUIT_INCH;
+  var PCOL={straight:'#4caf50',angle:'#f90',upull:'#e040fb',term:'#29b6f6'};
+  var PNAME={straight:'Straight pull',angle:'Angle pull',upull:'U-pull',term:'Terminates'};
+  var PAD=46;
+  var SHAPES={rect:'Rectangular Box',L:'L-Shaped Box',gutter:'Gutter / Wireway'};
+  function nnum(v,d){v=parseFloat(v);return isFinite(v)&&v>0?v:d;}
+  function q(v){return Math.round(v*4)/4;}
+  function nDim(){return{nw:Math.min(box.nw,box.W-2),nh:Math.min(box.nh,box.H-2)};}
+  /* Perimeter walls labeled A,B,C,... clockwise from top-left; plus 'Bk' (back). */
+  function wallSegs(){
+    var W=box.W,H=box.H,poly;
+    if(box.shape!=='L')poly=[[0,H],[W,H],[W,0],[0,0]];
+    else{
+      var n=nDim(),nw=n.nw,nh=n.nh;
+      if(box.nc==='TR')poly=[[0,H],[W-nw,H],[W-nw,H-nh],[W,H-nh],[W,0],[0,0]];
+      else if(box.nc==='TL')poly=[[nw,H],[W,H],[W,0],[0,0],[0,H-nh],[nw,H-nh]];
+      else if(box.nc==='BR')poly=[[0,H],[W,H],[W,nh],[W-nw,nh],[W-nw,0],[0,0]];
+      else poly=[[0,H],[W,H],[W,0],[nw,0],[nw,nh],[0,nh]];
+    }
+    var ids=['A','B','C','D','E','F'];
+    return poly.map(function(p,i){
+      var p2=poly[(i+1)%poly.length];
+      var len=Math.abs(p2[0]-p[0])+Math.abs(p2[1]-p[1]);
+      return{id:ids[i],p1:p,p2:p2,len:len,horiz:p[1]===p2[1]};
+    });
+  }
+  function wallById(id){var ws=wallSegs();for(var i=0;i<ws.length;i++)if(ws[i].id===id)return ws[i];return null;}
+  function cornerName(id){var ws=wallSegs();for(var i=0;i<ws.length;i++)if(ws[i].id===id)return ws[(i-1+ws.length)%ws.length].id+'-'+id;return '';}
+  function outline(){return wallSegs().map(function(w){return w.p1;});}
+  function inShape(x,y){
+    if(x<0||y<0||x>box.W||y>box.H)return false;
+    if(box.shape!=='L')return true;
+    var n=nDim(),r;
+    if(box.nc==='TR')r=[box.W-n.nw,box.W,box.H-n.nh,box.H];
+    else if(box.nc==='TL')r=[0,n.nw,box.H-n.nh,box.H];
+    else if(box.nc==='BR')r=[box.W-n.nw,box.W,0,n.nh];
+    else r=[0,n.nw,0,n.nh];
+    return !(x>r[0]&&x<r[1]&&y>r[2]&&y<r[3]);
+  }
+  function notchRect(){
+    var n=nDim();
+    if(box.nc==='TR')return[box.W-n.nw,box.W,box.H-n.nh,box.H];
+    if(box.nc==='TL')return[0,n.nw,box.H-n.nh,box.H];
+    if(box.nc==='BR')return[box.W-n.nw,box.W,0,n.nh];
+    return[0,n.nw,0,n.nh];
+  }
+  function inwardSgn(w){
+    var mx=(w.p1[0]+w.p2[0])/2,my=(w.p1[1]+w.p2[1])/2;
+    if(w.horiz)return inShape(mx,my+0.05)?1:-1;
+    return inShape(mx+0.05,my)?1:-1;
+  }
+  function oppDist(w){
+    if(!w||w.id==='Bk')return box.D;
+    var mx=(w.p1[0]+w.p2[0])/2,my=(w.p1[1]+w.p2[1])/2;
+    var dx=w.horiz?0:1,dy=w.horiz?1:0,sgn=inwardSgn(w);
+    var t=0,step=0.25,max=box.W+box.H;
+    while(t<max&&inShape(mx+dx*sgn*(t+step),my+dy*sgn*(t+step)))t+=step;
+    return q(t+step);
+  }
+  function axisShort(w){return w==='Bk'?['From L (in)','Up (in)']:['Along (in)','Back (in)'];}
+  function axisLong(w){return w==='Bk'?['from left','up from bottom']:['from corner '+cornerName(w),'back from front'];}
+  function validWalls(){return wallSegs().map(function(w){return w.id;}).concat(['Bk']);}
+  function autoPull(c){
+    if(c.exitWall==='--'){c.pull='term';return;}
+    if(c.entryWall===c.exitWall){c.pull='upull';return;}
+    if(c.entryWall==='Bk'||c.exitWall==='Bk'){c.pull='angle';return;}
+    var w1=wallById(c.entryWall),w2=wallById(c.exitWall);
+    if(w1&&w2&&w1.horiz===w2.horiz&&inwardSgn(w1)===-inwardSgn(w2)){
+      var c1=w1.horiz?w1.p1[1]:w1.p1[0],c2=w2.horiz?w2.p1[1]:w2.p1[0];
+      if((c2-c1)*inwardSgn(w1)>0){c.pull='straight';return;}
+    }
+    c.pull='angle';
+  }
+  function cl(c,side){
+    var w=side==='entry'?c.entryWall:c.exitWall,m=(INCH[c.sz]||1)/2+0.5;
+    var aK=side==='entry'?'ea':'xa',bK=side==='entry'?'eb':'xb';
+    if(w==='--')return;
+    if(w==='Bk'){
+      c[aK]=Math.max(m,Math.min(box.W-m,c[aK]));
+      c[bK]=Math.max(m,Math.min(box.H-m,c[bK]));
+      if(box.shape==='L'){
+        var r=notchRect();
+        if(c[aK]>r[0]-m&&c[aK]<r[1]+m&&c[bK]>r[2]-m&&c[bK]<r[3]+m){
+          var px=(r[0]>0)?(r[0]-m)-c[aK]:(r[1]+m)-c[aK];
+          var py=(r[2]>0)?(r[2]-m)-c[bK]:(r[3]+m)-c[bK];
+          if(Math.abs(px)<=Math.abs(py))c[aK]+=px;else c[bK]+=py;
+          c[aK]=Math.max(m,Math.min(box.W-m,c[aK]));c[bK]=Math.max(m,Math.min(box.H-m,c[bK]));
+        }
+      }
+    }else{
+      var wl=wallById(w);
+      if(!wl){return;}
+      var mm=Math.min(m,wl.len/2),md=Math.min(m,box.D/2);
+      c[aK]=Math.max(mm,Math.min(wl.len-mm,c[aK]));
+      c[bK]=Math.max(md,Math.min(box.D-md,c[bK]));
+    }
+    c[aK]=q(c[aK]);c[bK]=q(c[bK]);
+  }
+  function clampAll(){
+    var ok=validWalls();
+    conduits.forEach(function(c){
+      if(ok.indexOf(c.entryWall)<0){c.entryWall='A';var w=wallById('A');c.ea=w.len/2;c.eb=box.D/2;}
+      if(c.exitWall!=='--'&&ok.indexOf(c.exitWall)<0){c.exitWall='A';var w2=wallById('A');c.xa=w2.len/2;c.xb=box.D/2;}
+      autoPull(c);cl(c,'entry');cl(c,'exit');
+    });
+    if(_side&&_side!=='Bk'&&!wallById(_side))_side=null;
+  }
+  window.renderBoxsize=function(){
+    var shapeO=Object.keys(SHAPES).map(function(k){return '<option value="'+k+'">'+SHAPES[k]+'</option>';}).join('');
+    var cornO=[['TR','Top-Right'],['TL','Top-Left'],['BR','Bottom-Right'],['BL','Bottom-Left']].map(function(c){return '<option value="'+c[0]+'">'+c[1]+'</option>';}).join('');
+    return '<div style="font-size:12px;color:#888;margin-bottom:.5rem"><strong style="color:#f90">NEC 314.28</strong> - conductors 4 AWG and larger. Sides are lettered A, B, C... clockwise from top-left, plus Back. Drag circles, type exact coordinates, click a circle to highlight that conduit everywhere, or click a side (edge or chip) for its side view.</div>'
+      +'<div style="display:flex;gap:14px;font-size:12px;margin-bottom:.75rem;flex-wrap:wrap"><span><span style="color:#4caf50">&#9679;</span> Straight (8x)</span><span><span style="color:#f90">&#9679;</span> Angle (6x)</span><span><span style="color:#e040fb">&#9679;</span> U-Pull (6x)</span><span><span style="color:#29b6f6">&#9679;</span> Terminates (6x)</span></div>'
+      +'<div class="tab-row"><button class="tab-btn" id="pb-pf-toggle" onclick="window._pbPF(this)">&#128203; Prefab Order Mode: OFF</button></div>'
+      +'<div class="section-label" style="margin-top:0">Box Setup</div>'
+      +'<div class="row3"><div class="field"><label>Shape</label><select id="pb-shape" onchange="window._pbBox()">'+shapeO+'</select></div>'
+      +'<div class="field"><label>Width (in)</label><input type="number" id="pb-W" value="24" min="2" step="1" onchange="window._pbBox()"></div>'
+      +'<div class="field"><label>Height (in)</label><input type="number" id="pb-H" value="18" min="2" step="1" onchange="window._pbBox()"></div></div>'
+      +'<div class="row3"><div class="field"><label>Depth (in)</label><input type="number" id="pb-D" value="8" min="2" step="1" onchange="window._pbBox()"></div><div></div><div></div></div>'
+      +'<div class="row3" id="pb-notch-row" style="display:none"><div class="field"><label>Notch Corner</label><select id="pb-nc" onchange="window._pbBox()">'+cornO+'</select></div>'
+      +'<div class="field"><label>Notch Width (in)</label><input type="number" id="pb-nw" value="10" min="1" step="1" onchange="window._pbBox()"></div>'
+      +'<div class="field"><label>Notch Height (in)</label><input type="number" id="pb-nh" value="8" min="1" step="1" onchange="window._pbBox()"></div></div>'
+      +'<canvas id="pb-cv" width="620" height="340" style="width:100%;border:1px solid #2a2a2a;border-radius:8px;display:block;touch-action:none;cursor:default"></canvas>'
+      +'<div id="pb-side-chips" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0"></div>'
+      +'<canvas id="pb-side" width="620" height="240" style="width:100%;border:1px solid #2a2a2a;border-radius:8px;display:none"></canvas>'
+      +'<canvas id="pb-iso" width="620" height="250" style="width:100%;border:1px solid #2a2a2a;border-radius:8px;display:block;margin-top:8px"></canvas>'
+      +'<div id="pb-list" style="margin-top:1rem"></div>'
+      +'<div style="margin-top:.5rem"><button class="add-wire-btn" onclick="window._pbAdd()">+ Add Conduit</button></div>'
+      +'<div id="pb-result" style="margin-top:1rem"></div>'
+      +'<div id="pb-prefab" style="display:none;margin-top:1.25rem;border-top:1px solid #2e2e2e;padding-top:1rem">'
+      +'<div class="section-label" style="margin-top:0">Prefab Order Details</div>'
+      +'<div class="row"><div class="field"><label>Saved Job</label><select id="pb-pjobsel" onchange="cbPickJob(\'pb\')"></select></div>'
+      +'<div class="field"><label>Saved Requester</label><select id="pb-preqsel" onchange="cbPickReq(\'pb\')"></select></div></div>'
+      +'<div class="row"><div class="field"><label>Job Name</label><input type="text" id="pb-pjob" placeholder="Project / site"></div>'
+      +'<div class="field"><label>Job Number</label><input type="text" id="pb-pjobnum"></div></div>'
+      +'<div class="row"><div class="field"><label>Your Name</label><input type="text" id="pb-pname"></div>'
+      +'<div class="field"><label>Phone Number</label><input type="text" id="pb-pphone"></div></div>'
+      +'<div class="row"><div class="field"><label>Today\'s Date</label><input type="date" id="pb-pdate"></div>'
+      +'<div class="field"><label>Date Needed</label><input type="date" id="pb-pneed"></div></div>'
+      +'<div class="row3"><div class="field"><label>Urgency</label><select id="pb-purg"><option>Standard</option><option>Rush (24-48 hr)</option><option>Emergency / ASAP</option></select></div>'
+      +'<div class="field"><label>Knockouts</label><select id="pb-pko"><option>Punch all openings (knockouts)</option><option>Layout marks only - no punching</option><option>Blank box - no openings</option></select></div>'
+      +'<div class="field"><label>Quantity</label><input type="number" id="pb-pqty" value="1" min="1" max="999"></div></div>'
+      +'<div class="field"><label>Description (optional)</label><textarea id="pb-pdesc" rows="3" placeholder="Material, NEMA rating, cover style, mounting, delivery location..."></textarea></div>'
+      +'<div id="pb-p-err" class="err"></div>'
+      +'<button class="btn" onclick="pbExport(false)">&#128190; Save Form Locally</button>'
+      +'<button class="btn" style="margin-left:8px" onclick="pbExport(true)">&#9993; Email Order</button>'
+      +'<div class="result-note" style="margin-top:.5rem">Email opens your mail app with the order text pre-filled; the form image downloads first - attach it from Downloads. Saved jobs and requesters are shared with the conduit bending tool.</div>'
+      +'</div>';
+  };
+  function view(){var cv=document.getElementById('pb-cv');var cw=cv?cv.width:620,ch=cv?cv.height:340;var sc=Math.min((cw-2*PAD)/box.W,(ch-2*PAD)/box.H);return{sc:sc,x0:(cw-box.W*sc)/2,y0:(ch-box.H*sc)/2,cw:cw,ch:ch};}
+  function toPx(p){var v=view();return[v.x0+p[0]*v.sc,v.y0+(box.H-p[1])*v.sc];}
+  function wallPt(w,a){
+    var wl=wallById(w);if(!wl)return[0,0];
+    var ux=(wl.p2[0]-wl.p1[0])/wl.len,uy=(wl.p2[1]-wl.p1[1])/wl.len;
+    return[wl.p1[0]+ux*a,wl.p1[1]+uy*a];
+  }
+  function frontPt(w,a,b){return w==='Bk'?[a,b]:wallPt(w,a);}
+  function selRing(ctx,x,y,r){ctx.beginPath();ctx.arc(x,y,r+4,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.stroke();}
+  function draw(){
+    var cv=document.getElementById('pb-cv');if(!cv)return;
+    var ctx=cv.getContext('2d'),v=view();
+    ctx.clearRect(0,0,v.cw,v.ch);ctx.fillStyle='#141414';ctx.fillRect(0,0,v.cw,v.ch);
+    var pts=outline().map(toPx);
+    ctx.fillStyle='#1c1c1c';ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(function(p){ctx.lineTo(p[0],p[1]);});ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#3a3a3a';ctx.lineWidth=2;ctx.stroke();
+    wallSegs().forEach(function(w){
+      var mid=toPx([(w.p1[0]+w.p2[0])/2,(w.p1[1]+w.p2[1])/2]);
+      var sgn=inwardSgn(w),offX=0,offY=0;
+      if(w.horiz)offY=sgn>0?18:-18;else offX=sgn>0?-18:18;
+      ctx.fillStyle=_side===w.id?'#f90':'#777';
+      ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(w.id+' · '+w.len+'"',mid[0]+offX,mid[1]+offY);
+    });
+    ctx.fillStyle=_side==='Bk'?'#f90':'#2e2e2e';ctx.font='11px system-ui';ctx.textAlign='center';
+    ctx.fillText('FRONT VIEW - Back wall behind (dashed rings), depth '+box.D+'"',v.x0+box.W*v.sc/2,v.y0+box.H*v.sc-14);
+    conduits.forEach(function(c,idx){
+      var col=PCOL[c.pull]||'#888',r=Math.max(7,Math.min(17,(INCH[c.sz]||1)*v.sc/2));
+      var ep=toPx(frontPt(c.entryWall,c.ea,c.eb)),sel=c.id===_selId;
+      if(c.exitWall==='--'){
+        var wl=wallById(c.entryWall),ix=0,iy=0;
+        if(c.entryWall==='Bk'){ix=0;iy=1;}
+        else if(wl){var sg=inwardSgn(wl);if(wl.horiz)iy=-sg;else ix=sg;}
+        var end=[ep[0]+ix*34,ep[1]+iy*34];
+        ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=col+'88';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(ep[0],ep[1]);ctx.lineTo(end[0],end[1]);ctx.stroke();ctx.restore();
+        ctx.fillStyle=col;ctx.fillRect(end[0]-3,end[1]-3,6,6);
+      }else{
+        var xp=toPx(frontPt(c.exitWall,c.xa,c.xb));
+        ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=col+'88';ctx.lineWidth=1.5;ctx.beginPath();
+        if(c.pull==='straight'){ctx.moveTo(ep[0],ep[1]);ctx.lineTo(xp[0],xp[1]);}
+        else if(c.pull==='upull'){var wl2=wallById(c.entryWall),cx=(ep[0]+xp[0])/2,cy=(ep[1]+xp[1])/2;if(wl2){var sg2=inwardSgn(wl2);if(wl2.horiz)cy+=-sg2*55;else cx+=sg2*55;}ctx.moveTo(ep[0],ep[1]);ctx.quadraticCurveTo(cx,cy,xp[0],xp[1]);}
+        else{ctx.moveTo(ep[0],ep[1]);ctx.lineTo((ep[0]+xp[0])/2,(ep[1]+xp[1])/2);ctx.lineTo(xp[0],xp[1]);}
+        ctx.stroke();ctx.restore();
+      }
+      function circle(p,solid,wall,which){
+        var isSel=drag&&drag.id===c.id&&drag.which===which;
+        if(sel)selRing(ctx,p[0],p[1],r);
+        ctx.beginPath();ctx.arc(p[0],p[1],r,0,Math.PI*2);
+        if(wall==='Bk')ctx.setLineDash([4,3]);
+        ctx.fillStyle=solid?'#202020':'#141414';ctx.fill();
+        ctx.strokeStyle=col;ctx.lineWidth=isSel?3.2:(solid?1.8:2.6);ctx.stroke();ctx.setLineDash([]);
+        var szTxt=c.sz.replace('"','');
+        if(szTxt.length<=2||r>=szTxt.length*4){ctx.fillStyle=col;ctx.font='bold '+Math.min(11,r)+'px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(szTxt,p[0],p[1]);}
+        ctx.fillStyle=sel?'#fff':'#777';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('#'+(idx+1)+' · '+c.sz,p[0],p[1]-r-8);
+      }
+      circle(ep,true,c.entryWall,'entry');
+      if(c.exitWall!=='--')circle(toPx(frontPt(c.exitWall,c.xa,c.xb)),false,c.exitWall,'exit');
+    });
+    ctx.fillStyle='#444';ctx.font='10px system-ui';ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillText('Solid=Entry  Hollow=Exit  Square=Terminates  Click circle to select, click a side for side view',10,v.ch-10);
+  }
+  function isoDraw(){
+    var cv=document.getElementById('pb-iso');if(!cv)return;
+    var ctx=cv.getContext('2d'),cw=cv.width,ch=cv.height;
+    ctx.clearRect(0,0,cw,ch);ctx.fillStyle='#141414';ctx.fillRect(0,0,cw,ch);
+    var kx=0.5,ky=0.29;
+    var sc=Math.min((cw-100)/(box.W+box.D*kx),(ch-70)/(box.H+box.D*ky));
+    var ox=(cw-(box.W+box.D*kx)*sc)/2,oy=ch-(ch-(box.H+box.D*ky)*sc)/2;
+    function P(x,y,z){return[ox+(x+z*kx)*sc,oy-(y+z*ky)*sc];}
+    var out=outline();
+    function face(z,col){ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();var p0=P(out[0][0],out[0][1],z);ctx.moveTo(p0[0],p0[1]);out.slice(1).forEach(function(p){var t=P(p[0],p[1],z);ctx.lineTo(t[0],t[1]);});ctx.closePath();ctx.stroke();}
+    face(box.D,'#3a3a3a');
+    ctx.strokeStyle='#333';ctx.lineWidth=1;
+    out.forEach(function(p){var a=P(p[0],p[1],0),b=P(p[0],p[1],box.D);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();});
+    face(0,'#666');
+    wallSegs().forEach(function(w){
+      var mid=P((w.p1[0]+w.p2[0])/2,(w.p1[1]+w.p2[1])/2,box.D/2);
+      ctx.fillStyle=_side===w.id?'#f90':'#5a5a5a';
+      ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(w.id,mid[0],mid[1]);
+    });
+    var bkMid=P(box.W/2,box.H/2,box.D);
+    ctx.fillStyle=_side==='Bk'?'#f90':'#3c3c3c';ctx.font='bold 12px system-ui';ctx.textAlign='center';
+    ctx.fillText('BACK',bkMid[0],bkMid[1]);
+    ctx.fillStyle='#555';ctx.font='11px system-ui';
+    var pW=P(box.W/2,0,0);ctx.fillText(box.W+'"',pW[0],pW[1]+14);
+    var pH=P(0,box.H/2,0);ctx.textAlign='right';ctx.fillText(box.H+'"',pH[0]-8,pH[1]);
+    var pD=P(box.W,0,box.D/2);ctx.textAlign='left';ctx.fillText(box.D+'"',pD[0]+8,pD[1]+10);
+    conduits.forEach(function(c,idx){
+      var col=PCOL[c.pull]||'#888',sel=c.id===_selId;
+      function pt3(w,a,b){
+        if(w==='Bk')return[a,b,box.D];
+        var p=wallPt(w,a);return[p[0],p[1],b];
+      }
+      function hidden(w){
+        if(w==='Bk')return true;
+        var wl=wallById(w);if(!wl)return false;
+        var sg=inwardSgn(wl);
+        return wl.horiz?sg>0:sg>0;
+      }
+      function dot(w,a,b,solid){
+        var t=pt3(w,a,b),p=P(t[0],t[1],t[2]),r=Math.max(3.5,(INCH[c.sz]||1)*sc/2);
+        var hid=hidden(w);
+        if(sel)selRing(ctx,p[0],p[1],r);
+        ctx.beginPath();ctx.arc(p[0],p[1],r,0,Math.PI*2);
+        if(hid)ctx.setLineDash([3,3]);
+        ctx.globalAlpha=hid?0.55:1;
+        ctx.fillStyle=solid?col:'#141414';ctx.fill();
+        ctx.strokeStyle=col;ctx.lineWidth=sel?2.4:1.6;ctx.stroke();
+        ctx.setLineDash([]);ctx.globalAlpha=1;
+        ctx.fillStyle=sel?'#fff':'#666';ctx.font='bold 9px system-ui';ctx.textAlign='center';
+        ctx.fillText('#'+(idx+1)+' · '+c.sz,p[0],p[1]-r-6);
+      }
+      dot(c.entryWall,c.ea,c.eb,true);
+      if(c.exitWall!=='--')dot(c.exitWall,c.xa,c.xb,false);
+    });
+    ctx.fillStyle='#444';ctx.font='10px system-ui';ctx.textAlign='left';
+    ctx.fillText('3D preview - dashed/faded = far side',10,ch-10);
+  }
+  function renderChips(){
+    var el=document.getElementById('pb-side-chips');if(!el)return;
+    var mk=function(id,lbl){return '<button class="tab-btn'+(_side===id?' active':'')+'" style="padding:3px 12px;font-size:11px" onclick="window._pbSide(\''+id+'\')">'+lbl+'</button>';};
+    el.innerHTML='<span style="font-size:11px;color:#666">Side view:</span>'
+      +wallSegs().map(function(w){return mk(w.id,'Side '+w.id);}).join('')+mk('Bk','Back')
+      +(_side?'<span style="font-size:11px;color:#555;margin-left:4px">(click again to hide)</span>':'');
+  }
+  function sideDraw(){
+    var cv=document.getElementById('pb-side');if(!cv)return;
+    if(!_side){cv.style.display='none';return;}
+    cv.style.display='block';
+    var ctx=cv.getContext('2d'),cw=cv.width,ch=cv.height,P2=42;
+    ctx.clearRect(0,0,cw,ch);ctx.fillStyle='#141414';ctx.fillRect(0,0,cw,ch);
+    var isBk=_side==='Bk',wl=isBk?null:wallById(_side);
+    if(!isBk&&!wl){cv.style.display='none';return;}
+    var fw=isBk?box.W:wl.len,fh=isBk?box.H:box.D;
+    var sc=Math.min((cw-2*P2)/fw,(ch-2*P2)/fh);
+    var x0=(cw-fw*sc)/2,y0=(ch-fh*sc)/2;
+    ctx.fillStyle='#1c1c1c';ctx.fillRect(x0,y0,fw*sc,fh*sc);
+    ctx.strokeStyle='#3a3a3a';ctx.lineWidth=2;ctx.strokeRect(x0,y0,fw*sc,fh*sc);
+    ctx.fillStyle='#f90';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(isBk?'BACK WALL - '+box.W+'" x '+box.H+'" (viewed from inside)':'SIDE '+_side+' - '+wl.len+'" long x '+box.D+'" deep (inside face)',cw/2,16);
+    ctx.fillStyle='#555';ctx.font='11px system-ui';
+    if(isBk){
+      ctx.fillText('from left →',cw/2,y0+fh*sc+16);
+      ctx.save();ctx.translate(x0-14,y0+fh*sc/2);ctx.rotate(-Math.PI/2);ctx.fillText('up from bottom →',0,0);ctx.restore();
+    }else{
+      ctx.fillText('corner '+cornerName(_side)+' → along side',cw/2,y0+fh*sc+16);
+      ctx.fillText('FRONT (open)',cw/2,y0+fh*sc-10);
+      ctx.fillText('BACK',cw/2,y0+12);
+      ctx.save();ctx.translate(x0-14,y0+fh*sc/2);ctx.rotate(-Math.PI/2);ctx.fillText('back from front →',0,0);ctx.restore();
+    }
+    conduits.forEach(function(c,idx){
+      var col=PCOL[c.pull]||'#888',sel=c.id===_selId;
+      function dot(w,a,b,solid){
+        if(w!==_side)return;
+        var px=x0+a*sc,py=y0+(fh-b)*sc,r=Math.max(5,(INCH[c.sz]||1)*sc/2);
+        if(sel)selRing(ctx,px,py,r);
+        ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);
+        ctx.fillStyle=solid?'#202020':'#141414';ctx.fill();
+        ctx.strokeStyle=col;ctx.lineWidth=solid?1.8:2.6;ctx.stroke();
+        var szTxt=c.sz.replace('"','');
+        if(szTxt.length<=2||r>=szTxt.length*4){ctx.fillStyle=col;ctx.font='bold '+Math.min(11,r)+'px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(szTxt,px,py);}
+        ctx.fillStyle=sel?'#fff':'#888';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('#'+(idx+1)+' · '+c.sz,px,py-r-8);
+        ctx.fillStyle='#666';ctx.font='10px system-ui';ctx.fillText(a+'", '+b+'"',px,py+r+9);
+      }
+      dot(c.entryWall,c.ea,c.eb,true);
+      if(c.exitWall!=='--')dot(c.exitWall,c.xa,c.xb,false);
+    });
+  }
+  window._pbSide=function(id){_side=(_side===id)?null:id;renderChips();sideDraw();draw();isoDraw();};
+  window._pbSel=function(id,scroll){
+    if(_selId===id)return;
+    _selId=id;renderList();draw();isoDraw();sideDraw();
+    if(scroll){var el=document.getElementById('pbcard-'+id);if(el&&el.scrollIntoView)el.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  };
+  function renderList(){
+    var el=document.getElementById('pb-list');if(!el)return;
+    var selS='background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:5px 4px;border-radius:5px;font-size:12px;width:100%';
+    var inpS='background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:5px 6px;border-radius:5px;font-size:12px;width:100%';
+    var ws=wallSegs();
+    var szO=function(sel){return CONDUIT_TRADE_SIZES.map(function(s){return '<option value="'+s+'"'+(s===sel?' selected':'')+'>'+s+'</option>';}).join('');};
+    var wO=function(sel,allowNone){
+      var o=ws.map(function(w){return '<option value="'+w.id+'"'+(sel===w.id?' selected':'')+'>Side '+w.id+' ('+w.len+'")</option>';}).join('');
+      o+='<option value="Bk"'+(sel==='Bk'?' selected':'')+'>Back</option>';
+      if(allowNone)o+='<option value="--"'+(sel==='--'?' selected':'')+'>None - terminates</option>';
+      return o;
+    };
+    var pO=function(c){return [['straight','Straight'],['angle','Angle'],['upull','U-Pull'],['term','Terminates']].map(function(p){return '<option value="'+p[0]+'"'+(c.pull===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('');};
+    el.innerHTML=conduits.map(function(c,idx){
+      var eA=axisShort(c.entryWall),xA=axisShort(c.exitWall),sel=c.id===_selId;
+      function num(field,val){return '<input type="number" step="0.25" min="0" style="'+inpS+'" value="'+val+'" onchange="window._pbU2('+c.id+',\''+field+'\',this.value)">';}
+      function lbl(t){return '<div style="font-size:9px;color:#555;text-transform:uppercase;margin-bottom:2px">'+t+'</div>';}
+      var noExit=c.exitWall==='--';
+      return '<div id="pbcard-'+c.id+'" onclick="window._pbSel('+c.id+',false)" style="border:1px solid '+(sel?'#f90':'#2a2a2a')+';'+(sel?'background:#1e1a12;':'')+'border-radius:8px;padding:8px;margin-bottom:8px;cursor:pointer">'
+        +'<div style="display:grid;grid-template-columns:16px 1fr 1fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px">'
+        +'<div style="width:12px;height:12px;border-radius:50%;background:'+PCOL[c.pull]+';outline:'+(sel?'2px solid #fff':'none')+'"></div>'
+        +'<div>'+lbl('#'+(idx+1)+' Entry')+'<select style="'+selS+'" onchange="window._pbU2('+c.id+',\'entryWall\',this.value)">'+wO(c.entryWall,false)+'</select></div>'
+        +'<div>'+lbl('Exit')+'<select style="'+selS+'" onchange="window._pbU2('+c.id+',\'exitWall\',this.value)">'+wO(c.exitWall,true)+'</select></div>'
+        +'<div>'+lbl('Size')+'<select style="'+selS+'" onchange="window._pbU2('+c.id+',\'sz\',this.value)">'+szO(c.sz)+'</select></div>'
+        +'<div>'+lbl('Pull')+'<select style="'+selS+'" onchange="window._pbU2('+c.id+',\'pull\',this.value)">'+pO(c)+'</select></div>'
+        +'<button class="remove-btn" style="height:28px;width:28px;margin:0" onclick="event.stopPropagation();window._pbR2('+c.id+')">x</button></div>'
+        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'
+        +'<div>'+lbl('In: '+eA[0])+num('ea',c.ea)+'</div>'
+        +'<div>'+lbl('In: '+eA[1])+num('eb',c.eb)+'</div>'
+        +(noExit?'<div style="grid-column:span 2;align-self:end;font-size:11px;color:#29b6f6;padding-bottom:6px">Terminates in box - no exit opening</div>'
+          :'<div>'+lbl('Out: '+xA[0])+num('xa',c.xa)+'</div><div>'+lbl('Out: '+xA[1])+num('xb',c.xb)+'</div>')
+        +'</div></div>';
+    }).join('');
+  }
+  function refresh(){renderChips();renderList();draw();isoDraw();sideDraw();pbCalc();}
+  window._pbBox=function(){
+    box.shape=document.getElementById('pb-shape').value;
+    box.W=nnum(document.getElementById('pb-W').value,box.W);
+    box.H=nnum(document.getElementById('pb-H').value,box.H);
+    box.D=nnum(document.getElementById('pb-D').value,box.D);
+    box.nc=document.getElementById('pb-nc').value;
+    box.nw=nnum(document.getElementById('pb-nw').value,box.nw);
+    box.nh=nnum(document.getElementById('pb-nh').value,box.nh);
+    document.getElementById('pb-notch-row').style.display=box.shape==='L'?'grid':'none';
+    clampAll();refresh();
+  };
+  window._pbU2=function(id,field,val){
+    var c=conduits.find(function(x){return x.id===id;});if(!c)return;
+    if(field==='entryWall'||field==='exitWall'){
+      c[field]=val;
+      var side=field==='entryWall'?'entry':'exit';
+      if(val==='--'){c.pull='term';}
+      else if(val==='Bk'){if(side==='entry'){c.ea=box.W/2;c.eb=box.H/2;}else{c.xa=box.W/2;c.xb=box.H/2;}autoPull(c);}
+      else{var wl=wallById(val);if(wl){if(side==='entry'){c.ea=wl.len/2;c.eb=box.D/2;}else{c.xa=wl.len/2;c.xb=box.D/2;}}autoPull(c);}
+    }else if(field==='pull'){
+      c.pull=val;
+      if(val==='term')c.exitWall='--';
+      else if(c.exitWall==='--'){var ws=wallSegs(),alt=ws.find(function(w){return w.id!==c.entryWall;})||ws[0];c.exitWall=alt.id;c.xa=alt.len/2;c.xb=box.D/2;}
+    }else if(field==='sz'){c.sz=val;}
+    else{c[field]=parseFloat(val)||0;}
+    cl(c,'entry');cl(c,'exit');refresh();
+  };
+  window._pbR2=function(id){conduits=conduits.filter(function(c){return c.id!==id;});if(_selId===id)_selId=null;refresh();};
+  window._pbAdd=function(){
+    var ws=wallSegs(),wIn=ws[ws.length-1],wOut=ws[1];
+    var c={id:nextId++,entryWall:wIn.id,exitWall:wOut.id,sz:'2"',pull:'straight',ea:wIn.len/2,eb:box.D/2,xa:wOut.len/2,xb:box.D/2};
+    autoPull(c);conduits.push(c);clampAll();_selId=c.id;refresh();
+  };
+  function cvXY(e){var cv=document.getElementById('pb-cv');if(!cv)return{x:0,y:0};var r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*(cv.width/r.width),y:(e.clientY-r.top)*(cv.height/r.height)};}
+  function toBox(px,py){var v=view();return{x:(px-v.x0)/v.sc,y:box.H-(py-v.y0)/v.sc};}
+  function dist(ax,ay,bx,by){var dx=ax-bx,dy=ay-by;return Math.sqrt(dx*dx+dy*dy);}
+  function segDistPx(px,py,w){
+    var a=toPx(w.p1),b=toPx(w.p2);
+    var vx=b[0]-a[0],vy=b[1]-a[1],L2=vx*vx+vy*vy;
+    var t=L2?Math.max(0,Math.min(1,((px-a[0])*vx+(py-a[1])*vy)/L2)):0;
+    return dist(px,py,a[0]+vx*t,a[1]+vy*t);
+  }
+  function hitTest(px,py){
+    var v=view();
+    for(var i=conduits.length-1;i>=0;i--){
+      var c=conduits[i];
+      var ep=toPx(frontPt(c.entryWall,c.ea,c.eb));
+      var r=Math.max(9,Math.min(18,(INCH[c.sz]||1)*v.sc/2))+5;
+      if(dist(px,py,ep[0],ep[1])<=r)return{id:c.id,which:'entry'};
+      if(c.exitWall!=='--'){
+        var xp=toPx(frontPt(c.exitWall,c.xa,c.xb));
+        if(dist(px,py,xp[0],xp[1])<=r)return{id:c.id,which:'exit'};
+      }
+    }
+    return null;
+  }
+  function onDown(e){
+    var p=cvXY(e),h=hitTest(p.x,p.y);
+    if(h){drag=h;window._pbSel(h.id,true);var cv=document.getElementById('pb-cv');if(cv)cv.style.cursor='grabbing';return;}
+    var near=null,nd=10;
+    wallSegs().forEach(function(w){var d=segDistPx(p.x,p.y,w);if(d<nd){nd=d;near=w.id;}});
+    if(near){window._pbSide(near);return;}
+    var b=toBox(p.x,p.y);
+    if(inShape(b.x,b.y))window._pbSide('Bk');
+  }
+  function onMove(e){
+    var cv=document.getElementById('pb-cv');if(!cv)return;
+    var p=cvXY(e);
+    if(!drag){cv.style.cursor=hitTest(p.x,p.y)?'grab':'default';return;}
+    var c=conduits.find(function(x){return x.id===drag.id;});if(!c)return;
+    var b=toBox(p.x,p.y),t=1.5;
+    var near=null,nd=1e9;
+    wallSegs().forEach(function(w){
+      var d;
+      if(w.horiz)d=Math.abs(b.y-w.p1[1])+(b.x<Math.min(w.p1[0],w.p2[0])?Math.min(w.p1[0],w.p2[0])-b.x:b.x>Math.max(w.p1[0],w.p2[0])?b.x-Math.max(w.p1[0],w.p2[0]):0);
+      else d=Math.abs(b.x-w.p1[0])+(b.y<Math.min(w.p1[1],w.p2[1])?Math.min(w.p1[1],w.p2[1])-b.y:b.y>Math.max(w.p1[1],w.p2[1])?b.y-Math.max(w.p1[1],w.p2[1]):0);
+      if(d<nd){nd=d;near=w;}
+    });
+    var wall,a;
+    if(nd>t&&inShape(b.x,b.y)){wall='Bk';}
+    else{wall=near.id;
+      var ux=(near.p2[0]-near.p1[0])/near.len,uy=(near.p2[1]-near.p1[1])/near.len;
+      a=(b.x-near.p1[0])*ux+(b.y-near.p1[1])*uy;
+    }
+    if(drag.which==='entry'){
+      c.entryWall=wall;
+      if(wall==='Bk'){c.ea=b.x;c.eb=b.y;}else{c.ea=a;}
+    }else{
+      c.exitWall=wall;
+      if(wall==='Bk'){c.xa=b.x;c.xb=b.y;}else{c.xa=a;}
+    }
+    autoPull(c);cl(c,'entry');cl(c,'exit');renderList();draw();isoDraw();sideDraw();pbCalc();
+  }
+  function onUp(){if(drag){drag=null;var cv=document.getElementById('pb-cv');if(cv)cv.style.cursor='default';}}
+  function pbNec(){
+    var wm={};wallSegs().forEach(function(w){wm[w.id]=w;});
+    var notes=[],fails=0;
+    conduits.forEach(function(c,i){
+      if(c.pull!=='straight'||c.exitWall==='--'||c.entryWall==='Bk'||c.exitWall==='Bk')return;
+      var w1=wm[c.entryWall],w2=wm[c.exitWall],inch=INCH[c.sz]||0;
+      if(!w1||!w2||w1.horiz!==w2.horiz)return;
+      var d=w1.horiz?Math.abs(w1.p1[1]-w2.p1[1]):Math.abs(w1.p1[0]-w2.p1[0]);
+      var req=8*inch,ok=d>=req-0.001;if(!ok)fails++;
+      notes.push('<span style="color:#4caf50">Straight</span> #'+(i+1)+' '+c.sz+' (Side '+c.entryWall+' &rarr; Side '+c.exitWall+'): needs 8x'+inch+'" = <strong>'+req.toFixed(1)+'"</strong>, actual '+d.toFixed(1)+'" &rarr; <strong style="color:'+(ok?'#4caf50':'#f44336')+'">'+(ok?'OK':'FAIL')+'</strong>');
+    });
+    var groups={};
+    function addTo(wid,c,i){if(!groups[wid])groups[wid]=[];groups[wid].push({inch:INCH[c.sz]||0,sz:c.sz,idx:i+1});}
+    conduits.forEach(function(c,i){
+      if(c.pull==='angle'||c.pull==='upull'||c.pull==='term'){
+        addTo(c.entryWall,c,i);
+        if((c.pull==='angle'||c.pull==='upull')&&c.exitWall!=='--'&&c.exitWall!==c.entryWall)addTo(c.exitWall,c,i);
+      }
+    });
+    Object.keys(groups).forEach(function(wid){
+      var arr=groups[wid].sort(function(a,b){return b.inch-a.inch;});
+      var lrg=arr[0].inch,sumO=arr.slice(1).reduce(function(s,e){return s+e.inch;},0),req=6*lrg+sumO;
+      var avail=wid==='Bk'?box.D:oppDist(wm[wid]);
+      var ok=avail>=req-0.001;if(!ok)fails++;
+      var wn=wid==='Bk'?'Back':'Side '+wid;
+      notes.push('<span style="color:#f90">Angle/U/Term</span> at '+wn+' (#'+arr.map(function(e){return e.idx;}).join(', #')+'): needs 6x'+lrg+'" + '+sumO+'" = <strong>'+req.toFixed(1)+'"</strong> to opposite wall, actual '+avail.toFixed(1)+'" &rarr; <strong style="color:'+(ok?'#4caf50':'#f44336')+'">'+(ok?'OK':'FAIL')+'</strong>');
+    });
+    conduits.forEach(function(c,i){
+      if(c.pull==='upull'&&c.entryWall===c.exitWall){
+        var inch=INCH[c.sz]||0,req=6*inch,d=Math.max(0,Math.abs(c.ea-c.xa)-condOD(c.sz)),ok=d>=req-0.001;if(!ok)fails++;
+        notes.push('<span style="color:#e040fb">U-Pull</span> #'+(i+1)+' spacing on '+(c.entryWall==='Bk'?'Back':'Side '+c.entryWall)+': needs 6x'+inch+'" = <strong>'+req.toFixed(1)+'"</strong> between opening edges, actual '+d.toFixed(1)+'" &rarr; <strong style="color:'+(ok?'#4caf50':'#f44336')+'">'+(ok?'OK':'FAIL')+'</strong>');
+      }
+    });
+    return{notes:notes,fails:fails,pass:fails===0};
+  }
+  function pbCalc(){
+    var res=document.getElementById('pb-result');if(!res)return;
+    if(!conduits.length){res.innerHTML='<div class="err">Add at least one conduit.</div>';return;}
+    var n=pbNec();
+    var wallC={};
+    conduits.forEach(function(c){
+      (wallC[c.entryWall]=wallC[c.entryWall]||[]).push(c);
+      if(c.exitWall!=='--')(wallC[c.exitWall]=wallC[c.exitWall]||[]).push(c);
+    });
+    var crowd=[];
+    wallSegs().forEach(function(w){
+      var arr=wallC[w.id];if(!arr||!arr.length)return;
+      var sorted=arr.slice().sort(function(a,b){return condOD(b.sz)-condOD(a.sz);});
+      var needL=4+sorted.reduce(function(s,c){return s+condOD(c.sz);},0)+condOD(sorted[0].sz)*(sorted.length-1);
+      if(needL>w.len)crowd.push('Side '+w.id+' tight: ~'+needL.toFixed(1)+'" needed (ODs + spacing + 2" edges) vs '+w.len+'"');
+    });
+    res.innerHTML=rb(rh('NEC 314.28 Check - '+SHAPES[box.shape]+' '+box.W+'x'+box.H+'x'+box.D+'"')
+      +rr('Overall',n.pass?'Passes NEC minimums':n.fails+' check(s) FAIL - resize box or move conduits',n.pass?'good':'bad')
+      +'<div style="font-size:12px;color:#aaa;line-height:2.1;margin-top:.5rem">'+n.notes.map(function(s){return '<div>'+s+'</div>';}).join('')+'</div>'
+      +(crowd.length?rn('<span style="color:#ff9800">'+crowd.join('<br>')+'</span>'):''))
+      +(box.shape==='L'?rn('L-shape: side letters run clockwise from top-left. NEC distances are measured wall line to wall line - verify pull paths clear the notch.'):'');
+  }
+  window._pbPF=function(btn){
+    _pbPrefab=!_pbPrefab;
+    btn.classList.toggle('active',_pbPrefab);
+    btn.innerHTML='&#128203; Prefab Order Mode: '+(_pbPrefab?'ON':'OFF');
+    document.getElementById('pb-prefab').style.display=_pbPrefab?'block':'none';
+    if(_pbPrefab)cbMemFill('pb');
+  };
+  function schedLines(c,i){
+    var eA=axisLong(c.entryWall);
+    var out;
+    if(c.exitWall==='--')out='Out: terminates inside the box - no exit opening';
+    else{var xA=axisLong(c.exitWall);out='Out: '+(c.exitWall==='Bk'?'Back':'Side '+c.exitWall)+' - '+c.xa+'" '+xA[0]+', '+c.xb+'" '+xA[1];}
+    return{
+      head:'#'+(i+1)+'  '+c.sz+' conduit - '+PNAME[c.pull],
+      in_:'In:  '+(c.entryWall==='Bk'?'Back':'Side '+c.entryWall)+' - '+c.ea+'" '+eA[0]+', '+c.eb+'" '+eA[1],
+      out:out
+    };
+  }
+  function pbBuildForm(f){
+    var n=pbNec();
+    var W2=850,dgW=W2-80;
+    var frontH=Math.round(340*dgW/620),isoH2=Math.round(250*dgW/620);
+    var sideH=_side?Math.round(240*dgW/620)+12:0;
+    var schedH=conduits.length*58+10;
+    var H2=112+3*84+(32+3*52)+(32+schedH)+(32+frontH+12+isoH2+sideH+14)+(f.desc?170:0)+60;
+    var cv=document.createElement('canvas');cv.width=W2;cv.height=H2;
+    var ctx=cv.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,W2,H2);
+    ctx.fillStyle='#111';ctx.fillRect(0,0,W2,72);
+    ctx.fillStyle='#f90';ctx.font='bold 26px system-ui';ctx.textAlign='left';ctx.fillText('PREFAB PULL BOX ORDER',30,46);
+    var uc=f.urg.indexOf('Emergency')===0?'#c62828':f.urg.indexOf('Rush')===0?'#ef6c00':'#2e7d32';
+    ctx.fillStyle=uc;ctx.fillRect(W2-260,19,230,34);
+    ctx.fillStyle='#fff';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText(f.urg.toUpperCase(),W2-145,41);
+    var y=112;
+    function sect(t){ctx.fillStyle='#eee';ctx.fillRect(30,y-19,W2-60,27);ctx.fillStyle='#333';ctx.font='bold 13px system-ui';ctx.textAlign='left';ctx.fillText(t,40,y);y+=32;}
+    function pair(x,l,vv){ctx.fillStyle='#888';ctx.font='11px system-ui';ctx.textAlign='left';ctx.fillText(l.toUpperCase(),x,y);ctx.fillStyle='#111';ctx.font='600 16px system-ui';ctx.fillText(vv&&String(vv).trim()?String(vv):'-',x,y+21);}
+    function row2(l1,v1,l2,v2){pair(40,l1,v1);if(l2!==undefined)pair(440,l2,v2);y+=52;}
+    sect('ORDER INFO');row2('Date',cbFmtDate(f.date),'Date Needed',cbFmtDate(f.need));
+    sect('JOB');row2('Job Name',f.job,'Job Number',f.num);
+    sect('REQUESTED BY');row2('Name',f.name,'Phone',f.phone);
+    sect('BOX SPECIFICATION');
+    row2('Shape',SHAPES[box.shape]+(box.shape==='L'?' - notch '+box.nw+'" x '+box.nh+'" @ '+box.nc:''),'Outside Dimensions',box.W+'" W x '+box.H+'" H x '+box.D+'" D');
+    row2('Knockouts',f.ko,'Quantity',f.qty);
+    row2('Openings',conduits.length+' (sides lettered clockwise from top-left)','NEC 314.28',n.pass?'PASS':n.fails+' check(s) FAIL - see app');
+    sect('OPENING SCHEDULE');
+    conduits.forEach(function(c,i){
+      var s=schedLines(c,i);
+      ctx.fillStyle='#111';ctx.font='bold 13px system-ui';ctx.fillText(s.head,40,y);y+=17;
+      ctx.fillStyle='#444';ctx.font='12px system-ui';
+      ctx.fillText(s.in_,56,y);y+=16;
+      ctx.fillText(s.out,56,y);y+=25;
+    });
+    sect('DIAGRAMS');
+    var srcF=document.getElementById('pb-cv'),srcI=document.getElementById('pb-iso'),srcS=_side?document.getElementById('pb-side'):null;
+    ctx.fillStyle='#141414';ctx.fillRect(40,y-14,dgW,frontH);
+    if(srcF)ctx.drawImage(srcF,40,y-14,dgW,frontH);
+    ctx.strokeStyle='#ccc';ctx.lineWidth=1;ctx.strokeRect(40,y-14,dgW,frontH);
+    y+=frontH;
+    if(srcS){
+      var sH=Math.round(240*dgW/620);
+      ctx.fillStyle='#141414';ctx.fillRect(40,y-2,dgW,sH);
+      ctx.drawImage(srcS,40,y-2,dgW,sH);
+      ctx.strokeStyle='#ccc';ctx.strokeRect(40,y-2,dgW,sH);
+      y+=sH+12;
+    }
+    ctx.fillStyle='#141414';ctx.fillRect(40,y-2,dgW,isoH2);
+    if(srcI)ctx.drawImage(srcI,40,y-2,dgW,isoH2);
+    ctx.strokeStyle='#ccc';ctx.strokeRect(40,y-2,dgW,isoH2);
+    y+=isoH2+26;
+    if(f.desc){
+      sect('DESCRIPTION / NOTES');
+      ctx.fillStyle='#111';ctx.font='14px system-ui';
+      var words=f.desc.split(/\s+/),line='',cnt=0;
+      for(var wI=0;wI<words.length&&cnt<6;wI++){
+        var t2=line?line+' '+words[wI]:words[wI];
+        if(ctx.measureText(t2).width>W2-90){ctx.fillText(line,40,y);y+=20;cnt++;line=words[wI];}
+        else line=t2;
+      }
+      if(line&&cnt<6){ctx.fillText(line,40,y);y+=20;}
+    }
+    ctx.fillStyle='#999';ctx.font='11px system-ui';ctx.textAlign='left';
+    ctx.fillText('Generated by Electrical Field Toolkit - '+new Date().toLocaleString(),30,H2-20);
+    return cv;
+  }
+  window.pbExport=function(email){
+    var err=document.getElementById('pb-p-err');err.textContent='';
+    if(!conduits.length){err.textContent='Add at least one conduit opening first.';return;}
+    function v(id){return document.getElementById(id).value.trim();}
+    var f={job:v('pb-pjob'),num:v('pb-pjobnum'),name:v('pb-pname'),phone:v('pb-pphone'),date:v('pb-pdate'),need:v('pb-pneed'),urg:v('pb-purg'),ko:v('pb-pko'),qty:v('pb-pqty')||'1',desc:v('pb-pdesc')};
+    if(!f.job||!f.name||!f.need){err.textContent='Job name, your name, and date needed are required.';return;}
+    cbRemember(f,'pb');
+    var cv=pbBuildForm(f);
+    var fname=('pullbox_'+(f.num||f.job)+'_'+box.W+'x'+box.H+'x'+box.D+'_'+f.date).replace(/[^\w.-]+/g,'_')+'.png';
+    cv.toBlob(function(b){
+      var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
+      setTimeout(function(){URL.revokeObjectURL(a.href);},5000);
+    });
+    if(email){
+      var n=pbNec();
+      var lines=['PREFAB PULL BOX ORDER - '+f.urg,'','Job: '+f.job+(f.num?' (#'+f.num+')':''),'Requested by: '+f.name+(f.phone?' / '+f.phone:''),'Date: '+cbFmtDate(f.date)+'   Needed by: '+cbFmtDate(f.need),'','Box: '+SHAPES[box.shape]+' - '+box.W+'" W x '+box.H+'" H x '+box.D+'" D'+(box.shape==='L'?' (notch '+box.nw+'x'+box.nh+'" @ '+box.nc+')':''),'Sides lettered A, B, C... clockwise from top-left (front view), plus Back.','Knockouts: '+f.ko,'Qty: '+f.qty,'','OPENINGS:'];
+      conduits.forEach(function(c,i){
+        var s=schedLines(c,i);
+        lines.push(s.head);lines.push('   '+s.in_);lines.push('   '+s.out);
+      });
+      lines.push('','NEC 314.28: '+(n.pass?'PASS':n.fails+' check(s) FAIL'));
+      if(f.desc)lines.push('','Notes: '+f.desc);
+      lines.push('','The order form image ('+fname+') was just downloaded - please attach it to this email before sending.');
+      location.href='mailto:?subject='+encodeURIComponent('Prefab Pull Box Order - '+f.job+' - '+box.W+'x'+box.H+'x'+box.D+'"'+(f.urg!=='Standard'?' ['+f.urg+']':''))+'&body='+encodeURIComponent(lines.join('\r\n'));
+    }
+  };
+  window['init_boxsize']=function(){
+    box={shape:'rect',W:24,H:18,D:8,nc:'TR',nw:10,nh:8};
+    _pbPrefab=false;_side=null;_selId=null;nextId=1;
+    conduits=[
+      {id:nextId++,entryWall:'D',exitWall:'B',sz:'2"',pull:'straight',ea:9,eb:4,xa:9,xb:4}
+    ];
+    document.getElementById('pb-shape').value='rect';
+    document.getElementById('pb-W').value=box.W;document.getElementById('pb-H').value=box.H;document.getElementById('pb-D').value=box.D;
+    document.getElementById('pb-nc').value=box.nc;document.getElementById('pb-nw').value=box.nw;document.getElementById('pb-nh').value=box.nh;
+    document.getElementById('pb-notch-row').style.display='none';
+    var cv=document.getElementById('pb-cv');
+    cv.addEventListener('mousedown',onDown);cv.addEventListener('mousemove',onMove);cv.addEventListener('mouseup',onUp);cv.addEventListener('mouseleave',onUp);
+    cv.addEventListener('touchstart',function(e){e.preventDefault();onDown(e.touches[0]);},{passive:false});
+    cv.addEventListener('touchmove',function(e){e.preventDefault();onMove(e.touches[0]);},{passive:false});
+    cv.addEventListener('touchend',onUp);
+    var d=new Date();
+    document.getElementById('pb-pdate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    clampAll();refresh();cbMemFill('pb');
+  };
+})();
+/* END PULL BOX IIFE */
+
+/* ===== TABLE HIGHLIGHT LOGIC ===== */
+var _tblSelCol=null,_tblSelRow=null;
+function tblClearHL(tbl){if(!tbl)return;tbl.querySelectorAll('.col-hl,.row-hl,.intersect').forEach(function(el){el.classList.remove('col-hl','row-hl','intersect');});tbl.querySelectorAll('tr').forEach(function(tr){tr.classList.remove('row-hl');});}
+function tblApplyHL(tbl){if(!tbl)return;tblClearHL(tbl);var rows=[...tbl.querySelectorAll('tr')];if(_tblSelCol!==null){rows.forEach(function(tr){var cells=[...tr.children];if(cells[_tblSelCol])cells[_tblSelCol].classList.add('col-hl');});}if(_tblSelRow!==null&&rows[_tblSelRow])rows[_tblSelRow].classList.add('row-hl');if(_tblSelCol!==null&&_tblSelRow!==null&&rows[_tblSelRow]){var cell=[...rows[_tblSelRow].children][_tblSelCol];if(cell){cell.classList.remove('col-hl');cell.classList.add('intersect');}}}
+function tblClick(e,tbl){var td=e.target.closest('td,th');if(!td||!tbl.contains(td))return;var rows=[...tbl.querySelectorAll('tr')],rowIdx=rows.indexOf(td.closest('tr')),rowCells=[...td.closest('tr').children],colIdx=rowCells.indexOf(td),isHdrRow=td.closest('tr').querySelectorAll('td').length===0;if(isHdrRow){_tblSelCol=(_tblSelCol===colIdx)?null:colIdx;}else{if(td.tagName==='TH'){_tblSelRow=(_tblSelRow===rowIdx)?null:rowIdx;}else{_tblSelCol=(_tblSelCol===colIdx)?null:colIdx;if(_tblSelCol!==null)_tblSelRow=(_tblSelRow===rowIdx)?null:rowIdx;else _tblSelRow=rowIdx;}}tblApplyHL(tbl);}
+function tblInit(tbl){if(!tbl)return;_tblSelCol=null;_tblSelRow=null;tbl.style.cursor='pointer';tbl.addEventListener('click',function(e){tblClick(e,tbl);});}
+
+/* ===== TABLES ===== */
+function renderT310(){
+  var rows=AMP_TABLE.map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td>'+(r[1]!=null?r[1]:'--')+'</td><td>'+(r[2]!=null?r[2]:'--')+'</td><td>'+(r[3]!=null?r[3]:'--')+'</td><td>'+(r[4]!=null?r[4]:'--')+'</td><td>'+(r[5]!=null?r[5]:'--')+'</td><td>'+(r[6]!=null?r[6]:'--')+'</td></tr>';}).join('');
+  return '<div style="font-size:12px;color:#888;margin-bottom:.5rem">NEC Table 310.16 - 0-2000V, max 3 CCCs, 30C ambient. Click row/column to highlight.</div><div style="overflow-x:auto"><table class="ref-table" id="tbl-310"><thead><tr><th rowspan="2">Size</th><th colspan="3" style="text-align:center">Copper</th><th colspan="3" style="text-align:center">Aluminum</th></tr><tr><th>60C</th><th>75C</th><th>90C</th><th>60C</th><th>75C</th><th>90C</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+window['init_t310']=function(){tblInit(document.getElementById('tbl-310'));};
+
+function renderTCondfill(){
+  var types=[];CONDUIT_TABLE.forEach(function(r){if(types.indexOf(r[0])<0)types.push(r[0]);});
+  var tabs=types.map(function(t,i){return '<button class="tab-btn'+(i===0?' active':'')+'" onclick="cfTabSwitch(\''+t+'\',this)">'+t+'</button>';}).join('');
+  return '<div class="tab-row" id="cf-tabs">'+tabs+'</div><div id="cf-tab-content"></div>';
+}
+window['init_tcondfill']=function(){
+  var firstBtn=document.querySelector('#cf-tabs .tab-btn');
+  if(firstBtn) cfTabSwitch('EMT',firstBtn);
+};
+window.cfTabSwitch=function(type,btn){
+  _tblSelCol=null;_tblSelRow=null;
+  document.querySelectorAll('#cf-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');
+  var rows=CONDUIT_TABLE.filter(function(r){return r[0]===type;}).map(function(r){return '<tr><td><strong>'+r[1]+'</strong></td><td>'+r[2].toFixed(3)+'</td><td>'+r[3].toFixed(3)+'</td><td>'+r[4].toFixed(3)+'</td><td>'+r[5].toFixed(3)+'</td></tr>';}).join('');
+  document.getElementById('cf-tab-content').innerHTML='<div style="font-size:12px;color:#888;margin-bottom:.5rem">NEC Ch.9 Table 4 - internal area and fill (in2)</div><div style="overflow-x:auto"><table class="ref-table" id="tbl-cond"><thead><tr><th>Size</th><th>Total</th><th>1 Wire (53%)</th><th>2 Wires (31%)</th><th>3+ Wires (40%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  tblInit(document.getElementById('tbl-cond'));
+};
+
+function renderT250(){
+  var rows=EGC_TABLE.map(function(r){return '<tr><td>'+r[0]+' A</td><td>'+r[1]+' AWG/kcmil</td><td>'+r[2]+' AWG/kcmil</td></tr>';}).join('');
+  return '<div style="font-size:12px;color:#888;margin-bottom:.75rem">NEC Table 250.122 - Minimum EGC size by OCPD rating. Click rows/columns to highlight.</div><table class="ref-table" id="tbl-250"><thead><tr><th>OCPD Rating</th><th>Copper EGC</th><th>Aluminum EGC</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+window['init_t250']=function(){tblInit(document.getElementById('tbl-250'));};
+
+function renderTDerating(){
+  var rows=DERATING.map(function(r){return '<tr><td>'+r[0]+(r[1]===999?'+':r[0]===r[1]?'':' - '+r[1])+'</td><td>'+(r[2]*100).toFixed(0)+'%</td></tr>';}).join('');
+  return '<div style="font-size:12px;color:#888;margin-bottom:.75rem">NEC 310.15(B)(3)(a) - Adjustment factors for more than 3 CCCs. Click rows/columns to highlight.</div><table class="ref-table" id="tbl-der"><thead><tr><th>Number of CCCs</th><th>% of Base Ampacity</th></tr></thead><tbody>'+rows+'</tbody></table><div class="result-note" style="margin-top:.75rem">Neutrals on 4-wire systems carrying only 3rd harmonic imbalance count as CCCs.</div>';
+}
+window['init_tderating']=function(){tblInit(document.getElementById('tbl-der'));};
+
+function renderTWire(){
+  var rows=WIRE_SIZES.map(function(sz){return '<tr><td><strong>'+sz+'</strong></td><td>'+(WIRE_AREA[sz]?WIRE_AREA[sz].toFixed(4):'--')+'</td><td>'+(WIRE_AREA_XHHW[sz]?WIRE_AREA_XHHW[sz].toFixed(4):'--')+'</td><td>'+(WIRE_AREA_THW[sz]?WIRE_AREA_THW[sz].toFixed(4):'--')+'</td><td>'+(WIRE_AREA_TW[sz]?WIRE_AREA_TW[sz].toFixed(4):'--')+'</td><td>'+(WIRE_AREA_RHH[sz]?WIRE_AREA_RHH[sz].toFixed(4):'--')+'</td></tr>';}).join('');
+  return '<div style="font-size:12px;color:#888;margin-bottom:.75rem">NEC Ch.9 Table 5 - Wire areas (in2). Click rows/columns to highlight.</div><div style="overflow-x:auto"><table class="ref-table" id="tbl-wire"><thead><tr><th>Size</th><th>THHN/THWN-2</th><th>XHHW/XHHW-2</th><th>THW/THW-2</th><th>TW</th><th>RHH/RHW-2</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="result-note">THHW matches THHN for 14-10 AWG, THW for 8 AWG and larger.</div>';
+}
+window['init_twire']=function(){tblInit(document.getElementById('tbl-wire'));};
+
+/* ===== CALCULATIONS & CONVERSIONS ===== */
+
+/* --- OHM'S LAW --- */
+function renderOhmslaw(){
+  return '<div style="font-size:12px;color:#888;margin-bottom:.75rem">Enter any two known values. Leave the others blank to solve.</div>'
+    +'<div class="row"><div class="field"><label>Voltage E (Volts)</label><input type="number" id="ol-v" placeholder="solve" step="any" min="0"></div>'
+    +'<div class="field"><label>Current I (Amps)</label><input type="number" id="ol-i" placeholder="solve" step="any" min="0"></div></div>'
+    +'<div class="row"><div class="field"><label>Resistance R (Ohms)</label><input type="number" id="ol-r" placeholder="solve" step="any" min="0"></div>'
+    +'<div class="field"><label>Power P (Watts)</label><input type="number" id="ol-p" placeholder="solve" step="any" min="0"></div></div>'
+    +'<div id="ol-err" class="err"></div><button class="btn" onclick="calcOhms()">Calculate</button><div id="ol-result"></div>'
+    +'<div class="result-box" style="margin-top:1rem"><h3>Formula Reference</h3>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;font-size:12px;color:#aaa;line-height:1.9">'
+    +'<div><strong style="color:#f90">Find E:</strong><br>E = I x R<br>E = P / I<br>E = sqrt(P x R)</div>'
+    +'<div><strong style="color:#f90">Find I:</strong><br>I = E / R<br>I = P / E<br>I = sqrt(P / R)</div>'
+    +'<div><strong style="color:#f90">Find R:</strong><br>R = E / I<br>R = E^2 / P<br>R = P / I^2</div>'
+    +'<div><strong style="color:#f90">Find P:</strong><br>P = E x I<br>P = I^2 x R<br>P = E^2 / R</div>'
+    +'</div></div>';
+}
+function calcOhms(){
+  var vEl=document.getElementById('ol-v'),iEl=document.getElementById('ol-i'),rEl=document.getElementById('ol-r'),pEl=document.getElementById('ol-p');
+  var v=vEl.value!==''?+vEl.value:null,i=iEl.value!==''?+iEl.value:null,r=rEl.value!==''?+rEl.value:null,p=pEl.value!==''?+pEl.value:null;
+  var err=document.getElementById('ol-err');err.textContent='';
+  var known=[v,i,r,p].filter(function(x){return x!==null;}).length;
+  if(known<2){err.textContent='Enter at least two values.';return;}
+  if([v,i,r,p].some(function(x){return x!==null&&(isNaN(x)||x<0);})){err.textContent='Values must be zero or positive numbers.';return;}
+  var E=v,I=i,R=r,P=p;
+  if(E!==null&&I!==null){if(R===null)R=E/I;if(P===null)P=E*I;}
+  else if(E!==null&&R!==null){if(I===null)I=E/R;if(P===null)P=E*E/R;}
+  else if(E!==null&&P!==null){if(I===null)I=P/E;if(R===null)R=E*E/P;}
+  else if(I!==null&&R!==null){if(E===null)E=I*R;if(P===null)P=I*I*R;}
+  else if(I!==null&&P!==null){if(E===null)E=P/I;if(R===null)R=P/(I*I);}
+  else if(R!==null&&P!==null){if(E===null)E=Math.sqrt(P*R);if(I===null)I=Math.sqrt(P/R);}
+  if(![E,I,R,P].every(function(x){return isFinite(x);})){err.textContent='These inputs divide by zero - check for a 0 value.';return;}
+  document.getElementById('ol-result').innerHTML=rb(rh('Result')+rr('Voltage (E)',E.toFixed(4)+' V','good')+rr('Current (I)',I.toFixed(4)+' A','good')+rr('Resistance (R)',R.toFixed(4)+' Ohms','good')+rr('Power (P)',P.toFixed(4)+' W / '+(P/1000).toFixed(4)+' kW','good'));
+}
+
+/* --- MOTORS --- */
+function renderMotors(){
+  var hp3=MOTOR_FLC_3PH.map(function(r){return '<option value="'+r[0]+'">'+r[0]+' HP</option>';}).join('');
+  var hp1=MOTOR_FLC_1PH.map(function(r){return '<option value="'+r[0]+'">'+r[0]+' HP</option>';}).join('');
+  return '<div class="tab-row" id="mot-tabs">'
+    +'<button class="tab-btn active" onclick="motTab(\'3ph\',this)">3-Phase Motor</button>'
+    +'<button class="tab-btn" onclick="motTab(\'1ph\',this)">1-Phase Motor</button>'
+    +'<button class="tab-btn" onclick="motTab(\'gen\',this)">Formulas / LRC</button></div>'
+    +'<div id="mot-3ph"><div class="row"><div class="field"><label>HP (NEC 430.250)</label><select id="mot-hp3">'+hp3+'</select></div>'
+    +'<div class="field"><label>Voltage</label><select id="mot-v3"><option value="200">200V</option><option value="208">208V</option><option value="230">230V</option><option value="460" selected>460V</option><option value="575">575V</option></select></div></div>'
+    +'<button class="btn" onclick="calcMotor3()">Calculate</button><div id="mot-3-result"></div></div>'
+    +'<div id="mot-1ph" style="display:none"><div class="row"><div class="field"><label>HP (NEC 430.248)</label><select id="mot-hp1">'+hp1+'</select></div>'
+    +'<div class="field"><label>Voltage</label><select id="mot-v1"><option value="115">115V</option><option value="200">200V</option><option value="208">208V</option><option value="230" selected>230V</option></select></div></div>'
+    +'<button class="btn" onclick="calcMotor1()">Calculate</button><div id="mot-1-result"></div></div>'
+    +'<div id="mot-gen" style="display:none">'
+    +'<div class="result-box"><h3>Motor Formula Reference</h3><div style="font-size:13px;color:#aaa;line-height:2.1">'
+    +'<div><strong style="color:#f90">FLA (3ph):</strong> I = (HP x 746) / (1.732 x V x Eff x PF)</div>'
+    +'<div><strong style="color:#f90">FLA (1ph):</strong> I = (HP x 746) / (V x Eff x PF)</div>'
+    +'<div><strong style="color:#f90">Locked Rotor:</strong> ILR = (kVA/HP code x HP x 1000) / (1.732 x V)</div>'
+    +'<div><strong style="color:#f90">Min Conductor:</strong> 125% of FLC (NEC 430.22)</div>'
+    +'<div><strong style="color:#f90">Max Breaker:</strong> 250% FLC (HACR) | Max TD Fuse: 175% FLC</div>'
+    +'<div><strong style="color:#f90">Overload:</strong> 125% FLC (SF >= 1.15 or <= 40C rise)</div>'
+    +'<div><strong style="color:#f90">HP / kW:</strong> HP = kW / 0.746 | kW = HP x 0.746</div>'
+    +'<div><strong style="color:#f90">Sync speed:</strong> RPM = 120 x Hz / poles</div>'
+    +'</div></div>'
+    +'<div class="field" style="margin-top:1rem"><label>kVA/HP Code Letter</label><select id="mot-code">'
+    +'<option value="3.15">A (0-3.14)</option><option value="3.55">B (3.15-3.54)</option><option value="4.0">C (3.55-3.99)</option>'
+    +'<option value="4.5">D (4.0-4.49)</option><option value="5.0">E (4.5-4.99)</option><option value="5.6">F (5.0-5.59)</option>'
+    +'<option value="6.3">G (5.6-6.29)</option><option value="7.1">H (6.3-7.09)</option><option value="8.0" selected>J (7.1-7.99)</option>'
+    +'<option value="9.0">K (8.0-8.99)</option><option value="10.0">L (9.0-9.99)</option><option value="11.2">M (10.0-11.19)</option>'
+    +'<option value="12.5">N (11.2-12.49)</option><option value="14.0">P (12.5-13.99)</option><option value="16.0">R (14.0-15.99)</option>'
+    +'<option value="18.0">S (16.0-17.99)</option><option value="20.0">T (18.0-19.99)</option><option value="22.4">U (20.0-22.39)</option>'
+    +'<option value="26.0">V (22.4+)</option></select></div>'
+    +'<div class="row"><div class="field"><label>HP</label><input type="number" id="mot-ghp" value="25" min="0.1" step="0.5"></div>'
+    +'<div class="field"><label>Voltage (V)</label><input type="number" id="mot-gv" value="480" min="100"></div></div>'
+    +'<button class="btn" onclick="calcMotorLRC()">Calculate LRC</button><div id="mot-gen-result"></div></div>';
+}
+window.motTab=function(tab,btn){document.querySelectorAll('#mot-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');['mot-3ph','mot-1ph','mot-gen'].forEach(function(id){document.getElementById(id).style.display='none';});document.getElementById('mot-'+tab).style.display='block';};
+function motResult(flc){var cond=(Math.ceil(flc*1.25*10)/10).toFixed(1),ocpd=Math.ceil(flc*2.5),fuse=Math.ceil(flc*1.75),ol=Math.ceil(flc*1.25);return rb(rh('NEC Sizing')+rr('Full Load Current (FLC)','<span style="font-size:18px">'+flc+'</span> A','good')+rr('Min Conductor (125%)',cond+' A','')+rr('Max HACR Breaker (250%)',ocpd+' A','')+rr('Max TD Fuse (175%)',fuse+' A','')+rr('Overload Protection (125%)',ol+' A','')+rn('Use nameplate FLA for actual overload relay setting.'));}
+function calcMotor3(){var hp=+document.getElementById('mot-hp3').value,volt=+document.getElementById('mot-v3').value,vIdx={200:1,208:2,230:3,460:4,575:5}[volt]||4,row=MOTOR_FLC_3PH.find(function(r){return r[0]===hp;});if(!row||!row[vIdx]){document.getElementById('mot-3-result').innerHTML='<div class="err">No FLC data for this HP/voltage.</div>';return;}document.getElementById('mot-3-result').innerHTML=motResult(row[vIdx]);}
+function calcMotor1(){
+  var hp=+document.getElementById('mot-hp1').value,volt=+document.getElementById('mot-v1').value;
+  var row=MOTOR_FLC_1PH.find(function(r){return r[0]===hp;});
+  if(!row){document.getElementById('mot-1-result').innerHTML='<div class="err">No data for this HP.</div>';return;}
+  // columns: [HP, 115V, 200V, 208V, 230V]
+  var vIdx={115:1,200:2,208:3,230:4}[volt];
+  var flc;
+  if(vIdx){flc=row[vIdx];}
+  else{
+    // interpolate from 115V base if voltage not in table
+    flc=Math.round(row[1]*(115/volt)*10)/10;
+  }
+  document.getElementById('mot-1-result').innerHTML=motResult(flc);
+}
+function calcMotorLRC(){var code=+document.getElementById('mot-code').value,hp=+document.getElementById('mot-ghp').value,volt=+document.getElementById('mot-gv').value,lrc=(code*hp*1000)/(Math.sqrt(3)*volt);document.getElementById('mot-gen-result').innerHTML=rb(rh('Locked Rotor Current')+rr('Estimated LRC',lrc.toFixed(1)+' A','good')+rn('ILR = (kVA/HP x HP x 1000) / (1.732 x V). Use nameplate when available.'));}
+
+/* --- TRANSFORMER --- */
+function renderXfmr(){
+  return '<div class="tab-row" id="xf-tabs">'
+    +'<button class="tab-btn active" onclick="xfTab(\'size\',this)">KVA Sizing</button>'
+    +'<button class="tab-btn" onclick="xfTab(\'ratio\',this)">Turns Ratio</button>'
+    +'<button class="tab-btn" onclick="xfTab(\'ref\',this)">Reference</button></div>'
+    +'<div id="xf-size"><div class="row"><div class="field"><label>Phase</label><select id="xf-phase"><option value="1">Single Phase</option><option value="3" selected>Three Phase</option></select></div>'
+    +'<div class="field"><label>Load (kW)</label><input type="number" id="xf-kw" value="100" min="0" step="1"></div></div>'
+    +'<div class="row"><div class="field"><label>Power Factor</label><input type="number" id="xf-pf" value="0.85" min="0.1" max="1" step="0.01"></div>'
+    +'<div class="field"><label>Demand Factor %</label><input type="number" id="xf-df" value="100" min="10" max="100" step="5"></div></div>'
+    +'<button class="btn" onclick="calcXfSize()">Calculate</button><div id="xf-size-result"></div></div>'
+    +'<div id="xf-ratio" style="display:none"><div class="row"><div class="field"><label>Phase</label><select id="xf-rph"><option value="1">Single Phase</option><option value="3" selected>Three Phase</option></select></div>'
+    +'<div class="field"><label>Primary Voltage (V)</label><input type="number" id="xf-vp" value="480" min="1"></div></div>'
+    +'<div class="row"><div class="field"><label>Secondary Voltage (V)</label><input type="number" id="xf-vs" value="208" min="1"></div>'
+    +'<div class="field"><label>kVA Rating</label><input type="number" id="xf-kva" value="75" min="1"></div></div>'
+    +'<button class="btn" onclick="calcXfRatio()">Calculate</button><div id="xf-ratio-result"></div></div>'
+    +'<div id="xf-ref" style="display:none"><div class="result-box"><h3>Transformer Formulas</h3>'
+    +'<div style="font-size:13px;color:#aaa;line-height:2.2">'
+    +'<div><strong style="color:#f90">kVA (1ph):</strong> kVA = (V x I) / 1000</div>'
+    +'<div><strong style="color:#f90">kVA (3ph):</strong> kVA = (1.732 x V x I) / 1000</div>'
+    +'<div><strong style="color:#f90">Primary I (1ph):</strong> Ip = kVA x 1000 / Vp</div>'
+    +'<div><strong style="color:#f90">Primary I (3ph):</strong> Ip = kVA x 1000 / (1.732 x Vp)</div>'
+    +'<div><strong style="color:#f90">Turns ratio:</strong> a = Vp / Vs = Is / Ip</div>'
+    +'<div><strong style="color:#f90">Standard 3ph kVA:</strong> 15, 30, 45, 75, 112.5, 150, 225, 300, 500, 750, 1000, 1500, 2000, 2500</div>'
+    +'<div><strong style="color:#f90">Standard 1ph kVA:</strong> 1, 1.5, 2, 3, 5, 7.5, 10, 15, 25, 37.5, 50, 75, 100, 167</div>'
+    +'</div></div></div>';
+}
+window.xfTab=function(tab,btn){document.querySelectorAll('#xf-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');['xf-size','xf-ratio','xf-ref'].forEach(function(id){document.getElementById(id).style.display='none';});document.getElementById('xf-'+tab).style.display='block';};
+function calcXfSize(){var ph=+document.getElementById('xf-phase').value,kw=+document.getElementById('xf-kw').value,pf=+document.getElementById('xf-pf').value,df=+document.getElementById('xf-df').value/100;if(!(kw>0)||!(pf>0&&pf<=1)||!(df>0)){document.getElementById('xf-size-result').innerHTML='<div class="err">Load, PF (0-1), and demand factor must be greater than 0.</div>';return;}var kva=(kw*df)/pf,std3=[15,30,45,75,112.5,150,225,300,500,750,1000,1500,2000,2500],std1=[1,1.5,2,3,5,7.5,10,15,25,37.5,50,75,100,167],lst=ph===3?std3:std1,next=lst.find(function(s){return s>=kva;}),over=!next;if(over)next=lst[lst.length-1];var pct=((kva/next)*100).toFixed(1);document.getElementById('xf-size-result').innerHTML=rb(rh('Result')+rr('Required kVA',kva.toFixed(2)+' kVA','')+rr('Next Standard Size','<span style="font-size:18px">'+next+'</span> kVA',over?'bad':'good')+rr('Loading at Next Standard',pct+'%',+pct>100?'bad':+pct>90?'warn':'good')+(over?'<div class="err" style="margin-top:.5rem">Load exceeds the largest standard size - use multiple units or a custom transformer.</div>':'')+rn('Do not load transformers above 80% for continuous loads. NEC 450.3.'));}
+function calcXfRatio(){var ph=+document.getElementById('xf-rph').value,vp=+document.getElementById('xf-vp').value,vs=+document.getElementById('xf-vs').value,kva=+document.getElementById('xf-kva').value,ratio=vp/vs,mult=ph===3?Math.sqrt(3):1,ip=(kva*1000)/(mult*vp),is=(kva*1000)/(mult*vs);document.getElementById('xf-ratio-result').innerHTML=rb(rh('Result')+rr('Turns Ratio (Vp:Vs)',ratio.toFixed(3)+':1','good')+rr('Primary Current',ip.toFixed(1)+' A @ '+vp+'V','')+rr('Secondary Current',is.toFixed(1)+' A @ '+vs+'V','')+rr('Step',vp>vs?'Step-Down':'Step-Up',''));}
+
+/* --- POWER FACTOR CORRECTION --- */
+function renderPfcorr(){
+  return '<div class="result-note" style="margin-bottom:.75rem">Size a capacitor bank to correct power factor.</div>'
+    +'<div class="row"><div class="field"><label>System kW</label><input type="number" id="pfc-kw" value="100" min="0.1" step="1"></div>'
+    +'<div class="field"><label>Existing PF</label><input type="number" id="pfc-pf1" value="0.75" min="0.01" max="0.999" step="0.01"></div></div>'
+    +'<div class="row"><div class="field"><label>Target PF</label><input type="number" id="pfc-pf2" value="0.95" min="0.01" max="1.0" step="0.01"></div>'
+    +'<div class="field"><label>Voltage (V)</label><select id="pfc-volt"><option>120</option><option>208</option><option>240</option><option>277</option><option selected>480</option><option>600</option></select></div></div>'
+    +'<div class="field"><label>Phase</label><select id="pfc-phase"><option value="1">Single Phase</option><option value="3" selected>Three Phase</option></select></div>'
+    +'<div id="pfc-err" class="err"></div><button class="btn" onclick="calcPfc()">Calculate</button><div id="pfc-result"></div>'
+    +'<div class="result-note" style="margin-top:.75rem">kVAR = kW x (tan(arccos(PF1)) - tan(arccos(PF2)))</div>';
+}
+function calcPfc(){var kw=+document.getElementById('pfc-kw').value,pf1=+document.getElementById('pfc-pf1').value,pf2=+document.getElementById('pfc-pf2').value,volt=+document.getElementById('pfc-volt').value,ph=+document.getElementById('pfc-phase').value,err=document.getElementById('pfc-err');err.textContent='';if(!(kw>0)){err.textContent='System kW must be greater than 0.';return;}if(!(pf1>0&&pf1<1)){err.textContent='Existing PF must be between 0 and 1.';return;}if(pf2<=pf1||pf2>1){err.textContent='Target PF must be higher than existing PF and no more than 1.0.';return;}var th1=Math.acos(pf1),th2=Math.acos(pf2),kvar=kw*(Math.tan(th1)-Math.tan(th2)),kva1=kw/pf1,kva2=kw/pf2,mult=ph===3?Math.sqrt(3):1,i1=(kva1*1000)/(mult*volt),i2=(kva2*1000)/(mult*volt);document.getElementById('pfc-result').innerHTML=rb(rh('Result')+rr('Capacitor Bank Required','<span style="font-size:18px">'+kvar.toFixed(2)+'</span> kVAR','good')+rr('Existing kVA / Current',kva1.toFixed(2)+' kVA / '+i1.toFixed(1)+' A','')+rr('Corrected kVA / Current',kva2.toFixed(2)+' kVA / '+i2.toFixed(1)+' A','good')+rr('Current Reduction',(i1-i2).toFixed(1)+' A ('+(((i1-i2)/i1)*100).toFixed(1)+'%)','good'));}
+
+/* --- REACTANCE / IMPEDANCE --- */
+function renderReactance(){
+  return '<div class="tab-row" id="rx-tabs">'
+    +'<button class="tab-btn active" onclick="rxTab(\'xl\',this)">XL (Inductive)</button>'
+    +'<button class="tab-btn" onclick="rxTab(\'xc\',this)">XC (Capacitive)</button>'
+    +'<button class="tab-btn" onclick="rxTab(\'imp\',this)">Impedance Z</button>'
+    +'<button class="tab-btn" onclick="rxTab(\'res\',this)">Series / Parallel R</button></div>'
+    +'<div id="rx-xl"><div class="row"><div class="field"><label>Frequency (Hz)</label><input type="number" id="rx-xlf" value="60" min="1"></div>'
+    +'<div class="field"><label>Inductance</label><input type="number" id="rx-xll" value="50" min="0" step="any"></div></div>'
+    +'<div class="field"><label>Unit</label><select id="rx-xlunit"><option value="1">Henries (H)</option><option value="0.001" selected>Millihenries (mH)</option><option value="0.000001">Microhenries (uH)</option></select></div>'
+    +'<button class="btn" onclick="calcXL()">Calculate</button><div id="rx-xl-result"></div>'
+    +'<div class="result-note">XL = 2 x pi x f x L | At 60Hz: XL = 376.99 x L(H)</div></div>'
+    +'<div id="rx-xc" style="display:none"><div class="row"><div class="field"><label>Frequency (Hz)</label><input type="number" id="rx-xcf" value="60" min="1"></div>'
+    +'<div class="field"><label>Capacitance</label><input type="number" id="rx-xcc" value="100" min="0" step="any"></div></div>'
+    +'<div class="field"><label>Unit</label><select id="rx-xcunit"><option value="1">Farads (F)</option><option value="0.001">Millifarads (mF)</option><option value="0.000001" selected>Microfarads (uF)</option><option value="0.000000001">Nanofarads (nF)</option></select></div>'
+    +'<button class="btn" onclick="calcXC()">Calculate</button><div id="rx-xc-result"></div>'
+    +'<div class="result-note">XC = 1 / (2 x pi x f x C) | At 60Hz: XC = 2653.1 / C(uF)</div></div>'
+    +'<div id="rx-imp" style="display:none"><div class="row"><div class="field"><label>R (Ohms)</label><input type="number" id="rx-r" value="10" min="0" step="any"></div>'
+    +'<div class="field"><label>XL (Ohms)</label><input type="number" id="rx-rxl" value="8" min="0" step="any"></div></div>'
+    +'<div class="field"><label>XC (Ohms)</label><input type="number" id="rx-rxc" value="0" min="0" step="any"></div>'
+    +'<button class="btn" onclick="calcImp()">Calculate</button><div id="rx-imp-result"></div>'
+    +'<div class="result-note">Z = sqrt(R^2 + (XL - XC)^2) | Phase angle = arctan((XL-XC)/R)</div></div>'
+    +'<div id="rx-res" style="display:none"><div class="field"><label>Resistances (Ohms) - one per line or comma-separated</label>'
+    +'<textarea id="rx-rvals" rows="4">10\n20\n30</textarea></div>'
+    +'<div class="field"><label>Configuration</label><select id="rx-config"><option value="series">Series</option><option value="parallel">Parallel</option></select></div>'
+    +'<button class="btn" onclick="calcRes()">Calculate</button><div id="rx-res-result"></div></div>';
+}
+window.rxTab=function(tab,btn){document.querySelectorAll('#rx-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');['rx-xl','rx-xc','rx-imp','rx-res'].forEach(function(id){document.getElementById(id).style.display='none';});document.getElementById('rx-'+tab).style.display='block';};
+function calcXL(){var f=+document.getElementById('rx-xlf').value,l=+document.getElementById('rx-xll').value*(+document.getElementById('rx-xlunit').value);if(!(f>0)||!(l>=0)){document.getElementById('rx-xl-result').innerHTML='<div class="err">Frequency must be greater than 0 and inductance zero or positive.</div>';return;}var xl=2*Math.PI*f*l;document.getElementById('rx-xl-result').innerHTML=rb(rh('Result')+rr('Inductive Reactance (XL)',xl.toFixed(4)+' Ohms','good'));}
+function calcXC(){var f=+document.getElementById('rx-xcf').value,c=+document.getElementById('rx-xcc').value*(+document.getElementById('rx-xcunit').value);if(!(f>0)||!(c>0)){document.getElementById('rx-xc-result').innerHTML='<div class="err">Frequency and capacitance must both be greater than 0.</div>';return;}var xc=1/(2*Math.PI*f*c);document.getElementById('rx-xc-result').innerHTML=rb(rh('Result')+rr('Capacitive Reactance (XC)',xc.toFixed(4)+' Ohms','good'));}
+function calcImp(){var r=+document.getElementById('rx-r').value,xl=+document.getElementById('rx-rxl').value,xc=+document.getElementById('rx-rxc').value;if(isNaN(r)||isNaN(xl)||isNaN(xc)||r<0||xl<0||xc<0){document.getElementById('rx-imp-result').innerHTML='<div class="err">Enter zero or positive values for R, XL, and XC.</div>';return;}var net=xl-xc,z=Math.sqrt(r*r+net*net),theta=Math.atan2(net,r)*180/Math.PI,pf=Math.cos(Math.atan2(net,r));document.getElementById('rx-imp-result').innerHTML=rb(rh('Result')+rr('Impedance (Z)',z.toFixed(4)+' Ohms','good')+rr('Net Reactance (XL-XC)',net.toFixed(4)+' Ohms ('+(net>0?'Inductive':net<0?'Capacitive':'Resonant')+')','')+rr('Phase Angle',theta.toFixed(2)+'deg','')+rr('Power Factor',pf.toFixed(4)+' ('+(pf*100).toFixed(1)+'%)',''));}
+function calcRes(){var vals=document.getElementById('rx-rvals').value.split(/[\n,]+/).map(function(v){return +v.trim();}).filter(function(v){return v>0;}),cfg=document.getElementById('rx-config').value;if(!vals.length){document.getElementById('rx-res-result').innerHTML='<div class="err">Enter at least one value.</div>';return;}var total=cfg==='series'?vals.reduce(function(s,v){return s+v;},0):1/vals.reduce(function(s,v){return s+1/v;},0);document.getElementById('rx-res-result').innerHTML=rb(rh('Result')+rr((cfg==='series'?'Series':'Parallel')+' Total',total.toFixed(4)+' Ohms','good')+rr('Values entered',vals.join(' , ')+' Ohms',''));}
+
+/* --- LIGHTING --- */
+function renderLighting(){
+  var iesRows=[['Parking exterior','5-10','54-108'],['Parking interior','10-20','108-215'],['Warehouse (inactive)','10-20','108-215'],['Stairways / corridors','10-20','108-215'],['Warehouse (active)','20-30','215-323'],['Lobby / reception','20-50','215-538'],['Office (general)','30-50','323-538'],['Conference rooms','30-50','323-538'],['Classroom','30-50','323-538'],['Retail / sales floor','30-50','323-538'],['Hospital patient room','30-50','323-538'],['Office (detailed)','50-75','538-807'],['Manufacturing (general)','50-100','538-1076'],['Hospital exam/treatment','75-150','807-1614'],['Surgical suite','150-200+','1614-2153+'],['Fine assembly / inspection','100-500+','1076+']].map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>';}).join('');
+  return '<div class="tab-row" id="lt-tabs">'
+    +'<button class="tab-btn active" onclick="ltTab(\'fc\',this)">Footcandles Check</button>'
+    +'<button class="tab-btn" onclick="ltTab(\'lamp\',this)">Fixture Count</button>'
+    +'<button class="tab-btn" onclick="ltTab(\'ref\',this)">IES Reference</button></div>'
+    +'<div id="lt-fc"><div class="row3"><div class="field"><label>Length (ft)</label><input type="number" id="lt-len" value="40" min="1"></div>'
+    +'<div class="field"><label>Width (ft)</label><input type="number" id="lt-wid" value="30" min="1"></div>'
+    +'<div class="field"><label>Ceiling Ht (ft)</label><input type="number" id="lt-ch" value="10" min="1"></div></div>'
+    +'<div class="row3"><div class="field"><label>Lumens/Fixture</label><input type="number" id="lt-lm" value="5000" min="1"></div>'
+    +'<div class="field"><label>Fixtures</label><input type="number" id="lt-fix" value="12" min="1"></div>'
+    +'<div class="field"><label>CU</label><input type="number" id="lt-cu" value="0.65" min="0.1" max="1" step="0.01"></div></div>'
+    +'<div class="field"><label>LLF</label><input type="number" id="lt-llf" value="0.80" min="0.5" max="1" step="0.01"></div>'
+    +'<button class="btn" onclick="calcFC()">Calculate</button><div id="lt-fc-result"></div>'
+    +'<div class="result-note">CU (Coefficient of Utilization): office 0.60-0.70, warehouse 0.55-0.65. LLF: clean 0.80, dirty 0.65-0.70.</div></div>'
+    +'<div id="lt-lamp" style="display:none"><div class="row3"><div class="field"><label>Length (ft)</label><input type="number" id="lt2-len" value="40" min="1"></div>'
+    +'<div class="field"><label>Width (ft)</label><input type="number" id="lt2-wid" value="30" min="1"></div>'
+    +'<div class="field"><label>Target fc</label><input type="number" id="lt2-fc" value="50" min="1"></div></div>'
+    +'<div class="row3"><div class="field"><label>Lumens/Fixture</label><input type="number" id="lt2-lm" value="5000" min="1"></div>'
+    +'<div class="field"><label>CU</label><input type="number" id="lt2-cu" value="0.65" min="0.1" max="1" step="0.01"></div>'
+    +'<div class="field"><label>LLF</label><input type="number" id="lt2-llf" value="0.80" min="0.5" max="1" step="0.01"></div></div>'
+    +'<button class="btn" onclick="calcLampCount()">Calculate</button><div id="lt-lamp-result"></div></div>'
+    +'<div id="lt-ref" style="display:none"><div class="result-box"><h3>IES Recommended Illuminance Levels</h3>'
+    +'<div style="overflow-x:auto"><table class="ref-table"><thead><tr><th>Space Type</th><th>Footcandles</th><th>Lux</th></tr></thead><tbody>'+iesRows+'</tbody></table></div>'
+    +'<div class="result-note">IES Lighting Handbook 10th Ed. fc x 10.764 = Lux</div></div></div>';
+}
+window.ltTab=function(tab,btn){document.querySelectorAll('#lt-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');['lt-fc','lt-lamp','lt-ref'].forEach(function(id){document.getElementById(id).style.display='none';});document.getElementById('lt-'+tab).style.display='block';};
+function calcFC(){var L=+document.getElementById('lt-len').value,W=+document.getElementById('lt-wid').value,lm=+document.getElementById('lt-lm').value,fix=+document.getElementById('lt-fix').value,cu=+document.getElementById('lt-cu').value,llf=+document.getElementById('lt-llf').value;if(!(L>0)||!(W>0)||!(lm>0)||!(fix>0)||!(cu>0)||!(llf>0)){document.getElementById('lt-fc-result').innerHTML='<div class="err">All values must be greater than 0.</div>';return;}var area=L*W,fc=(fix*lm*cu*llf)/area,lux=fc*10.764;document.getElementById('lt-fc-result').innerHTML=rb(rh('Result')+rr('Room Area',area.toFixed(0)+' ft2','')+rr('Total Lumens',(fix*lm).toLocaleString()+' lm','')+rr('Average Illuminance','<span style="font-size:18px">'+fc.toFixed(1)+'</span> fc','good')+rr('Lux',lux.toFixed(1)+' lux',''));}
+function calcLampCount(){var L=+document.getElementById('lt2-len').value,W=+document.getElementById('lt2-wid').value,fc=+document.getElementById('lt2-fc').value,lm=+document.getElementById('lt2-lm').value,cu=+document.getElementById('lt2-cu').value,llf=+document.getElementById('lt2-llf').value;if(!(L>0)||!(W>0)||!(fc>0)||!(lm>0)||!(cu>0)||!(llf>0)){document.getElementById('lt-lamp-result').innerHTML='<div class="err">All values must be greater than 0.</div>';return;}var area=L*W,count=(fc*area)/(lm*cu*llf),up=Math.ceil(count);document.getElementById('lt-lamp-result').innerHTML=rb(rh('Result')+rr('Calculated Fixtures',count.toFixed(2),'')+rr('Round Up To','<span style="font-size:18px">'+up+'</span> fixtures','good')+rr('Actual fc with '+up+' fixtures',((up*lm*cu*llf)/area).toFixed(1)+' fc','good'));}
+
+/* --- DWELLING LOAD --- */
+function renderDwelload(){
+  return '<div class="result-note" style="margin-bottom:.75rem">NEC Article 220 Standard Method - single-family dwelling service sizing.</div>'
+    +'<div class="row"><div class="field"><label>Floor Area (ft2)</label><input type="number" id="dw-sqft" value="2000" min="100" step="100"></div>'
+    +'<div class="field"><label>Small Appliance Circuits (min 2)</label><input type="number" id="dw-sa" value="2" min="2"></div></div>'
+    +'<div class="row"><div class="field"><label>Laundry Circuits</label><input type="number" id="dw-laundry" value="1" min="0"></div>'
+    +'<div class="field"><label>HVAC / Heat (W)</label><input type="number" id="dw-hvac" value="8000" min="0" step="500"></div></div>'
+    +'<div class="row3"><div class="field"><label>Range (W)</label><input type="number" id="dw-range" value="12000" min="0" step="500"></div>'
+    +'<div class="field"><label>Dryer (W)</label><input type="number" id="dw-dryer" value="5000" min="0" step="500"></div>'
+    +'<div class="field"><label>Water Heater (W)</label><input type="number" id="dw-wh" value="4500" min="0" step="500"></div></div>'
+    +'<div class="row3"><div class="field"><label>Dishwasher (W)</label><input type="number" id="dw-dw" value="1200" min="0" step="100"></div>'
+    +'<div class="field"><label>Disposal (W)</label><input type="number" id="dw-disp" value="800" min="0" step="100"></div>'
+    +'<div class="field"><label>Other Fixed (W)</label><input type="number" id="dw-other" value="0" min="0" step="100"></div></div>'
+    +'<button class="btn" onclick="calcDwelling()">Calculate</button><div id="dw-result"></div>';
+}
+function calcDwelling(){
+  function pv(id){return Math.max(0,parseFloat(document.getElementById(id).value)||0);}
+  var sqft=pv('dw-sqft'),sa=Math.max(2,Math.round(pv('dw-sa'))),laundry=Math.round(pv('dw-laundry')),hvac=pv('dw-hvac'),range=pv('dw-range'),dryer=pv('dw-dryer'),wh=pv('dw-wh'),dw=pv('dw-dw'),disp=pv('dw-disp'),other=pv('dw-other');
+  var res=document.getElementById('dw-result');
+  if(!(sqft>0)){res.innerHTML='<div class="err">Enter a floor area greater than 0.</div>';return;}
+  var lighting=sqft*3,saLoad=sa*1500,laundryLoad=laundry*1500,sub=lighting+saLoad+laundryLoad;
+  var demLt=sub<=3000?sub:sub<=120000?3000+(sub-3000)*0.35:3000+(120000-3000)*0.35+(sub-120000)*0.25;
+  var rangeWarn=range>27000;
+  var rangeDem=range>0?(range<=12000?8000:8000*(1+0.05*Math.floor(range/1000-12+0.5))):0;
+  var dryerDem=dryer>0?Math.max(dryer,5000):0;
+  var fixList=[wh,dw,disp,other].filter(function(v){return v>0;});
+  var fixTot=fixList.reduce(function(s,v){return s+v;},0),fixDem=fixList.length>=4?fixTot*0.75:fixTot;
+  var totalVA=demLt+rangeDem+dryerDem+fixDem+hvac,amps=totalVA/240;
+  var svc=[100,125,150,200,225,300,400].find(function(s){return s>=amps;});
+  res.innerHTML=rb(rh('NEC 220 Standard Method')
+    +rr('General Lighting (3 VA/ft2)',lighting.toLocaleString()+' VA','')
+    +rr('Small Appl. + Laundry',(saLoad+laundryLoad).toLocaleString()+' VA','')
+    +rr('Lighting/SA After Demand (220.45)',demLt.toFixed(0)+' VA','')
+    +rr('Range Demand (220.55)',rangeDem.toFixed(0)+' VA',rangeWarn?'warn':'')
+    +rr('Dryer (220.54, min 5 kVA)',dryerDem.toFixed(0)+' VA','')
+    +rr('Fixed Appliances (220.53'+(fixList.length>=4?', 75%':'')+')',fixDem.toFixed(0)+' VA','')
+    +rr('HVAC (100%)',hvac.toLocaleString()+' VA','')
+    +rr('Total Demand',totalVA.toFixed(0)+' VA / '+(totalVA/1000).toFixed(2)+' kVA','')
+    +rr('Min Service Amps @ 240V','<span style="font-size:18px">'+amps.toFixed(1)+'</span> A','good')
+    +rr('Recommended Service Size',svc?svc+' A':'Over 400 A - engineered service',svc?'good':'bad')
+    +rn((rangeWarn?'Range over 27 kW - apply NEC 220.55 Note 2 directly. ':'')+'NEC 220 Standard Method; 100 A service minimum per 230.79(C). Verify with local AHJ.'));}
+
+/* --- CONVERSIONS --- */
+function renderConvtable(){
+  var wireRows=[['14 AWG',4.11,2.08,0.00323],['12 AWG',6.53,3.31,0.00513],['10 AWG',10.38,5.26,0.00816],['8 AWG',16.51,8.37,0.01297],['6 AWG',26.24,13.3,0.0206],['4 AWG',41.74,21.1,0.0328],['2 AWG',66.36,33.6,0.0521],['1 AWG',83.69,42.4,0.0657],['1/0',105.6,53.5,0.0829],['2/0',133.1,67.4,0.1045],['3/0',167.8,85.0,0.1318],['4/0',211.6,107.0,0.1662],['250 kcmil',250,127,0.196],['350 kcmil',350,177,0.2749],['500 kcmil',500,253,0.3927],['750 kcmil',750,380,0.5890],['1000 kcmil',1000,507,0.7854]].map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>';}).join('');
+  var pfxRows=[['Tera','T','10^12','TW'],['Giga','G','10^9','GW'],['Mega','M','10^6','MW'],['Kilo','k','10^3','kV, kW'],['(base)','--','10^0','V, A, W'],['Milli','m','10^-3','mV, mA'],['Micro','u','10^-6','uF, uA'],['Nano','n','10^-9','nF'],['Pico','p','10^-12','pF']].map(function(r){return '<tr><td>'+r[0]+'</td><td><strong>'+r[1]+'</strong></td><td>'+r[2]+'</td><td style="color:#888">'+r[3]+'</td></tr>';}).join('');
+  return '<div class="tab-row" id="cv-tabs">'
+    +'<button class="tab-btn active" onclick="cvTab(\'units\',this)">Unit Converter</button>'
+    +'<button class="tab-btn" onclick="cvTab(\'wire\',this)">Wire Mil-Area</button>'
+    +'<button class="tab-btn" onclick="cvTab(\'temp\',this)">Temperature</button>'
+    +'<button class="tab-btn" onclick="cvTab(\'prefix\',this)">SI Prefixes</button></div>'
+    +'<div id="cv-units"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:.75rem">'
+    +'<div class="field" style="margin:0;flex:0 0 100px"><label>Value</label><input type="number" id="cv-val" value="1" step="any" oninput="cvConvert()"></div>'
+    +'<div class="field" style="margin:0;flex:1"><label>From</label><select id="cv-from" onchange="cvConvert()"></select></div>'
+    +'<div class="field" style="margin:0;flex:1"><label>To</label><select id="cv-to" onchange="cvConvert()"></select></div></div>'
+    +'<div id="cv-unit-result"></div>'
+    +'<div class="result-box" style="margin-top:1rem"><h3>Common Electrical Conversions</h3>'
+    +'<div style="font-size:12px;color:#aaa;line-height:2">'
+    +'<div>1 HP = 746 W = 0.746 kW</div><div>1 kW = 1.341 HP</div>'
+    +'<div>1 BTU/hr = 0.293 W | 1 W = 3.412 BTU/hr</div>'
+    +'<div>1 ton cooling = 12,000 BTU/hr = 3,517 W</div>'
+    +'<div>1 ft = 0.3048 m | 1 in = 25.4 mm</div>'
+    +'<div>1 mile = 5,280 ft = 1.609 km</div>'
+    +'<div>1 gallon = 3.785 L</div>'
+    +'<div>pi = 3.14159 | sqrt(2) = 1.41421 | sqrt(3) = 1.73205</div>'
+    +'</div></div></div>'
+    +'<div id="cv-wire" style="display:none">'
+    +'<div class="field"><label>Value</label><input type="number" id="cv-wval" value="250" step="any" oninput="cvWire()"></div>'
+    +'<div class="field"><label>From</label><select id="cv-wfrom" onchange="cvWire()"><option value="kcmil">kcmil</option><option value="cmil">Circular mils</option><option value="mm2">mm2</option><option value="in2">in2</option></select></div>'
+    +'<div id="cv-wire-result"></div>'
+    +'<div class="result-box" style="margin-top:.75rem"><h3>AWG / kcmil Reference</h3>'
+    +'<div style="overflow-x:auto"><table class="ref-table"><thead><tr><th>Size</th><th>kcmil</th><th>mm2</th><th>in2</th></tr></thead><tbody>'+wireRows+'</tbody></table></div></div></div>'
+    +'<div id="cv-temp" style="display:none">'
+    +'<div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem">'
+    +'<div class="field" style="margin:0;flex:0 0 120px"><label>Value</label><input type="number" id="cv-tval" value="75" step="any" oninput="cvTemp()"></div>'
+    +'<div class="field" style="margin:0"><label>From</label><select id="cv-tfrom" onchange="cvTemp()"><option value="C">Celsius (C)</option><option value="F" selected>Fahrenheit (F)</option><option value="K">Kelvin (K)</option></select></div></div>'
+    +'<div id="cv-temp-result"></div>'
+    +'<div class="result-box" style="margin-top:.75rem"><h3>Key Electrical Temps</h3>'
+    +'<div style="font-size:12px;color:#aaa;line-height:2">'
+    +'<div>NEC standard ambient: 30C (86F)</div>'
+    +'<div>60C wire = 140F | 75C wire = 167F | 90C wire = 194F</div>'
+    +'<div>Transformer insulation: A=105C, B=130C, F=155C, H=180C</div>'
+    +'</div></div></div>'
+    +'<div id="cv-prefix" style="display:none"><div class="result-box"><h3>SI Prefixes</h3>'
+    +'<table class="ref-table"><thead><tr><th>Prefix</th><th>Symbol</th><th>Factor</th><th>Example</th></tr></thead><tbody>'+pfxRows+'</tbody></table></div></div>';
+}
+window.cvTab=function(tab,btn){document.querySelectorAll('#cv-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');['cv-units','cv-wire','cv-temp','cv-prefix'].forEach(function(id){document.getElementById(id).style.display='none';});document.getElementById('cv-'+tab).style.display='block';};
+var CV_BASE={W:1,kW:1000,MW:1e6,HP:746,BTU_hr:0.29307,ton:3516.85,V:1,kV:1000,A:1,mA:0.001,Ohm:1,kOhm:1000,MOhm:1e6,ft:0.3048,m:1,in_:0.0254,mm:0.001,km:1000,gal:3.78541,L:1,lb:0.453592,kg:1};
+// Category groups — only units in the same group can convert to each other
+var CV_CATS={
+  power:['W','kW','MW','HP','BTU_hr','ton'],
+  voltage:['V','kV'],
+  current:['A','mA'],
+  resistance:['Ohm','kOhm','MOhm'],
+  length:['ft','m','in_','mm','km'],
+  volume:['gal','L'],
+  mass:['lb','kg']
+};
+var CV_UNIT_LABELS={W:'Watts',kW:'Kilowatts',MW:'Megawatts',HP:'Horsepower',BTU_hr:'BTU/hour',ton:'Tons (cooling)',V:'Volts',kV:'Kilovolts',A:'Amps',mA:'Milliamps',Ohm:'Ohms',kOhm:'Kilohms',MOhm:'Megohms',ft:'Feet',m:'Meters',in_:'Inches',mm:'Millimeters',km:'Kilometers',gal:'Gallons',L:'Liters',lb:'Pounds',kg:'Kilograms'};
+function cvCatOf(unit){var cat=null;Object.keys(CV_CATS).forEach(function(c){if(CV_CATS[c].indexOf(unit)>=0)cat=c;});return cat;}
+function cvBuildFromOpts(){
+  var all=Object.keys(CV_UNIT_LABELS);
+  return all.map(function(u){return '<option value="'+u+'">'+CV_UNIT_LABELS[u]+' ('+u.replace('_','')+')</option>';}).join('');
+}
+function cvBuildToOpts(fromUnit){
+  var cat=cvCatOf(fromUnit);
+  var compatible=cat?CV_CATS[cat]:[fromUnit];
+  return compatible.map(function(u){return '<option value="'+u+'">'+CV_UNIT_LABELS[u]+' ('+u.replace('_','')+')</option>';}).join('');
+}
+window['init_convtable']=function(){
+  document.getElementById('cv-from').innerHTML=cvBuildFromOpts();
+  document.getElementById('cv-from').value='W';
+  cvFromChanged();
+  cvWire();cvTemp();
+};
+window.cvFromChanged=function(){
+  var from=document.getElementById('cv-from').value;
+  var toSel=document.getElementById('cv-to');
+  var prevTo=toSel.value;
+  toSel.innerHTML=cvBuildToOpts(from);
+  // keep previous selection if still valid, else default to second item (different from from)
+  var opts=[...toSel.options].map(function(o){return o.value;});
+  if(opts.indexOf(prevTo)>=0&&prevTo!==from){toSel.value=prevTo;}
+  else{var diff=opts.find(function(o){return o!==from;});if(diff)toSel.value=diff;}
+  cvConvert();
+};
+window.cvConvert=function(){
+  var v=+document.getElementById('cv-val').value,from=document.getElementById('cv-from').value,to=document.getElementById('cv-to').value,bf=CV_BASE[from],bt=CV_BASE[to];
+  if(!bf||!bt){document.getElementById('cv-unit-result').innerHTML='<div class="err">Incompatible units.</div>';return;}
+  var result=(v*bf)/bt;
+  document.getElementById('cv-unit-result').innerHTML=rb(rr(v+' '+from.replace('_',''),result.toPrecision(6).replace(/\.?0+$/,'')+' '+to.replace('_',''),'good'));
+};
+window.cvWire=function(){
+  var el=document.getElementById('cv-wval');if(!el)return;
+  var v=+el.value,from=document.getElementById('cv-wfrom').value,kcmil;
+  if(from==='kcmil')kcmil=v;else if(from==='cmil')kcmil=v/1000;else if(from==='mm2')kcmil=v/0.5067;else kcmil=v/0.0007854;
+  var cmil=kcmil*1000,mm2=kcmil*0.5067,in2=kcmil*0.0007854;
+  document.getElementById('cv-wire-result').innerHTML=rb(rh('Equivalent Areas')+rr('kcmil',kcmil.toFixed(3),'good')+rr('Circular Mils',Math.round(cmil).toLocaleString(),'')+rr('mm2',mm2.toFixed(3),'')+rr('in2',in2.toFixed(6),''));
+};
+window.cvTemp=function(){
+  var el=document.getElementById('cv-tval');if(!el)return;
+  var v=+el.value,from=document.getElementById('cv-tfrom').value,c,f,k;
+  if(from==='C'){c=v;f=c*9/5+32;k=c+273.15;}else if(from==='F'){f=v;c=(f-32)*5/9;k=c+273.15;}else{k=v;c=k-273.15;f=c*9/5+32;}
+  document.getElementById('cv-temp-result').innerHTML=rb(rh('Result')+rr('Celsius',c.toFixed(2)+' C','good')+rr('Fahrenheit',f.toFixed(2)+' F','')+rr('Kelvin',k.toFixed(2)+' K',''));
+};
+
+renderHome();
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
+</script>
+</body>
+</html>
