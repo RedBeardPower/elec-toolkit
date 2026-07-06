@@ -61,8 +61,8 @@ body{font-family:system-ui,sans-serif;background:#111;color:#e8e8e8;min-height:1
 .ref-table tr:hover td{background:#1c1c1c}
 .ref-table td.col-hl{background:#1e2a1a !important}
 .ref-table th.col-hl{background:#1e2a1a !important;color:#8bc34a}
-.ref-table tr.row-hl td{background:#1a1e2a !important}
-.ref-table tr.row-hl th{background:#1a1e2a !important;color:#7cb0f0}
+.ref-table td.row-hl{background:#1a1e2a !important}
+.ref-table th.row-hl{background:#1a1e2a !important;color:#7cb0f0}
 .ref-table td.intersect,.ref-table th.intersect{background:#2d3a1a !important;outline:2px solid #f90;outline-offset:-2px;color:#f90 !important;font-weight:700;border-radius:2px}
 .wire-row{display:grid;grid-template-columns:1fr 1fr 1fr 32px;gap:8px;align-items:end;margin-bottom:8px}
 .wire-row .field{margin-bottom:0}
@@ -90,9 +90,8 @@ body{font-family:system-ui,sans-serif;background:#111;color:#e8e8e8;min-height:1
   <button class="nav-back" id="back-btn" onclick="goHome()">&#8592; Home</button>
 </div>
 <div id="home">
-  <div class="section-label">Calculators</div><div class="card-grid" id="calc-grid"></div>
+  <div class="section-label">Calculators &amp; Conversions</div><div class="card-grid" id="calc-grid"></div>
   <div class="section-label">NEC Reference Tables</div><div class="card-grid" id="table-grid"></div>
-  <div class="section-label">Calculations &amp; Conversions</div><div class="card-grid" id="formula-grid"></div>
 </div>
 <div id="tool-view"></div>
 
@@ -219,13 +218,12 @@ var TOOLS={
 };
 
 function renderHome(){
-  var cg=document.getElementById('calc-grid'),tg=document.getElementById('table-grid'),fg=document.getElementById('formula-grid');
+  var cg=document.getElementById('calc-grid'),tg=document.getElementById('table-grid');
   function makeCard(t){
     return '<div class="tool-card" onclick="openToolById(\''+t.id+'\')"><div class="icon">'+t.icon+'</div><div class="name">'+t.name+'</div><div class="desc">'+t.desc+'</div></div>';
   }
-  cg.innerHTML=TOOLS.calcs.map(makeCard).join('');
+  cg.innerHTML=TOOLS.calcs.concat(TOOLS.formulas).map(makeCard).join('');
   tg.innerHTML=TOOLS.tables.map(makeCard).join('');
-  fg.innerHTML=TOOLS.formulas.map(makeCard).join('');
 }
 // Lookup label from registry by id so we never embed the label string in onclick HTML
 function openToolById(id){
@@ -249,9 +247,9 @@ function rn(t){return '<div class="result-note">'+t+'</div>';}
 function renderVdrop(){
   var sizes=WIRE_SIZES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
   return '<div class="row"><div class="field"><label>Mode</label><select id="vd-mode" onchange="vdModeChange()"><option value="vd">Voltage Drop %</option><option value="minsize">Min Conductor Size</option><option value="maxdist">Max Distance</option></select></div>'
-    +'<div class="field"><label>Phase</label><select id="vd-phase"><option value="1">Single Phase (1ph)</option><option value="3">Three Phase (3ph)</option></select></div></div>'
+    +'<div class="field"><label>Phase</label><select id="vd-phase"><option value="1">Single Phase (1ph)</option><option value="3" selected>Three Phase (3ph)</option></select></div></div>'
     +'<div class="row"><div class="field"><label>Conductor</label><select id="vd-cond"><option value="cu">Copper</option><option value="al">Aluminum</option></select></div>'
-    +'<div class="field"><label>Voltage (V)</label><select id="vd-volt"><option>120</option><option>208</option><option>240</option><option selected>277</option><option>480</option><option>600</option></select></div></div>'
+    +'<div class="field"><label>Voltage (V)</label><select id="vd-volt"><option>120</option><option>208</option><option>240</option><option>277</option><option selected>480</option><option>600</option></select></div></div>'
     +'<div class="row" id="vd-size-row"><div class="field"><label>Wire Size</label><select id="vd-size">'+sizes+'</select></div>'
     +'<div class="field"><label>Parallels</label><select id="vd-par"><option>1</option><option>2</option><option>3</option><option>4</option><option>6</option></select></div></div>'
     +'<div class="row"><div class="field"><label>One-Way Length (ft)</label><input type="number" id="vd-len" value="100" min="1"></div>'
@@ -365,11 +363,12 @@ function calcAmpacity(){
 /* ===== 4. BOX FILL ===== */
 function renderBoxfill(){
   return '<div class="result-note" style="margin-bottom:1rem">NEC 314.16(B): Each conductor volume based on largest conductor entering box. EGCs (2020+): one volume for all, plus 1/4 volume for each EGC over four.</div>'
-    +'<div class="field"><label>Largest Wire Size</label><select id="bf-sz"><option value="2.00">14 AWG (2.00 in3)</option><option value="2.25" selected>12 AWG (2.25 in3)</option><option value="2.50">10 AWG (2.50 in3)</option><option value="3.00">8 AWG (3.00 in3)</option><option value="5.00">6 AWG (5.00 in3)</option></select></div>'
+    +'<div class="field"><label>Largest Wire Size</label><select id="bf-sz"><option value="1.50">18 AWG (1.50 in3)</option><option value="1.75">16 AWG (1.75 in3)</option><option value="2.00">14 AWG (2.00 in3)</option><option value="2.25" selected>12 AWG (2.25 in3)</option><option value="2.50">10 AWG (2.50 in3)</option><option value="3.00">8 AWG (3.00 in3)</option><option value="5.00">6 AWG (5.00 in3)</option></select></div>'
     +'<div class="row3"><div class="field"><label>Conductors In</label><input type="number" id="bf-cin" value="2" min="0"></div><div class="field"><label>Conductors Out</label><input type="number" id="bf-cout" value="2" min="0"></div><div class="field"><label>Pass-Through</label><input type="number" id="bf-cpt" value="0" min="0"></div></div>'
     +'<div class="row3"><div class="field"><label>Devices</label><input type="number" id="bf-dev" value="1" min="0"></div><div class="field"><label>Cable Clamps</label><input type="number" id="bf-clamp" value="1" min="0"></div><div class="field"><label>Support Fittings</label><input type="number" id="bf-stud" value="0" min="0"></div></div>'
     +'<div class="field"><label>EGCs (1 volume; +1/4 each over 4)</label><input type="number" id="bf-egc" value="1" min="0"></div>'
-    +'<button class="btn" onclick="calcBoxFill()">Calculate</button><div id="bf-result"></div>';
+    +'<button class="btn" onclick="calcBoxFill()">Calculate</button><div id="bf-result"></div>'
+    +'<div class="result-note" style="margin-top:1rem">NEC Table 314.16(B)(1) lists volume allowances only for 18 AWG through 6 AWG - that is the full range for device/outlet box fill. Conductors 4 AWG and larger use junction / pull box sizing instead (NEC 314.28 - see the Pull Box Sizing tool).</div>';
 }
 function calcBoxFill(){
   function bfn(id){return Math.max(0,parseInt(document.getElementById(id).value)||0);}
@@ -486,6 +485,65 @@ window['init_wirecolor']=function(){wcShow();};
 var BEND_ANGLES=[['10',6.0,'1/16',0.0625],['22.5',2.6,'3/16',0.1875],['30',2.0,'1/4',0.25],['45',1.4,'3/8',0.375],['60',1.2,'1/2',0.5]];
 var STUB_TAKEUP={'1/2"':5,'3/4"':6,'1"':8,'1-1/4"':11};
 var _cbMode='offset';
+function cbGuideHTML(){
+  function box(title,body){return '<div class="result-box" style="margin-top:1rem"><h3>'+title+'</h3>'+body+'</div>';}
+  function ul(items){return '<ul style="margin:.25rem 0 .25rem 1.1rem;padding:0;font-size:13px;color:#c8c8c8;line-height:1.85">'+items.map(function(i){return '<li>'+i+'</li>';}).join('')+'</ul>';}
+  function fx(label,eq){return '<div style="font-size:13px;color:#c8c8c8;line-height:1.9"><strong style="color:#f90">'+label+':</strong> '+eq+'</div>';}
+  var multTbl='<table class="ref-table" style="margin-top:.5rem"><thead><tr><th>Bend Angle</th><th>Offset Multiplier</th><th>Shrink / inch of rise</th></tr></thead><tbody>'
+    +[['10&deg;','6.0','1/16"'],['22.5&deg;','2.6','3/16"'],['30&deg;','2.0','1/4"'],['45&deg;','1.4','3/8"'],['60&deg;','1.2','1/2"']].map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>';}).join('')
+    +'</tbody></table><div class="result-note">Multiplier x obstacle depth = distance between the two bend marks. Shrink x depth = how much the run "pulls back," so add it when locating the first mark. 30&deg; is the everyday offset; 10&deg; ("dog-leg") for shallow saddles; 45&deg; where space is tight.</div>';
+  var takeupTbl='<table class="ref-table" style="margin-top:.5rem"><thead><tr><th>EMT (hand bender)</th><th>Take-Up (deduct)</th></tr></thead><tbody>'
+    +[['1/2"','5"'],['3/4"','6"'],['1"','8"'],['1-1/4"','11"']].map(function(r){return '<tr><td><strong>'+r[0]+'</strong></td><td>'+r[1]+'</td></tr>';}).join('')
+    +'</tbody></table><div class="result-note">Take-up is stamped on most benders - always trust the stamp on the tool in your hand over any chart.</div>';
+  return '<div style="font-size:12px;color:#888;margin-bottom:.25rem">Field reference for a hand bender (conduit bender). Every calculator tab does this math for you - this is the "how" and "why" behind it.</div>'
+    +box('Reading the Bender',ul([
+      '<strong style="color:#e8e8e8">Arrow</strong> - the primary layout mark. Line it up with your measured mark for <em>offsets, saddles, and kicks</em>.',
+      '<strong style="color:#e8e8e8">Star / teardrop</strong> - used for <em>back-to-back</em> bends; align it to the mark so the back of the second 90 lands on the dimension.',
+      '<strong style="color:#e8e8e8">Notch (rim mark / half-circle)</strong> - the center of the bend; align it for the <em>center of a 3-point saddle</em> (45&deg;).',
+      'Keep steady <strong>foot pressure on the heel</strong> of the bender so bends come out square and to-angle - conduit springs back a few degrees, so a hair past the line is normal.',
+      'Keep all bends <strong>in the same plane</strong> - sight down the pipe after each bend; a twisted offset ("dog-leg") is the #1 rookie mistake.'
+    ]))
+    +box('Multiplier &amp; Shrink Cheat Sheet',multTbl)
+    +box('90&deg; Stub-Up (take-up method)',
+      fx('Mark','Stub height - take-up')
+      +ul(['Measure the finished stub height (back of conduit to end).','Subtract the take-up for your conduit size to get the mark.','Put the <strong>arrow</strong> on the mark, bend to 90&deg;.'])
+      +takeupTbl)
+    +box('Back-to-Back 90s',
+      fx('Second mark','Back-to-back dimension, from the back of the first 90')
+      +ul(['Bend the first 90 as a normal stub (arrow on the mark).','Measure the back-to-back distance from the <strong>back</strong> of the first bend and mark it.','Line the <strong>star / teardrop</strong> up with that mark, bender pointing back toward the first 90, and bend the second 90. The two backs now sit exactly the dimension apart.']))
+    +box('Offset (going over/around something)',
+      fx('Distance between marks','Obstacle depth x multiplier')
+      +fx('Shrink','Obstacle depth x shrink-per-inch (add when locating mark 1)')
+      +ul(['Measure the obstacle depth (how far you must rise) and the distance to it.','Pick an angle (30&deg; is standard). Distance between marks = depth x multiplier.','Mark 1 = distance-to-obstacle + shrink. Mark 2 = mark 1 + (depth x multiplier).','<strong>Arrow</strong> on mark 1, bend up to angle. Flip the conduit 180&deg;, <strong>arrow</strong> on mark 2, bend the same angle the opposite way. Both bends must stay in one plane.']))
+    +box('3-Point Saddle (over a pipe / round obstacle)',
+      fx('Center','45&deg; bend at the obstacle center')
+      +fx('Outer marks','2.5 x obstacle depth to each side, bent 22.5&deg;')
+      +fx('Shrink','3/16" per inch of depth')
+      +ul(['Center mark = distance to the obstacle center + shrink.','Put the <strong>notch (rim mark)</strong> on the center mark and bend 45&deg;.','Mark the outer points 2.5 x depth on each side of center. <strong>Arrow</strong> on each, bend 22.5&deg;, rotated 180&deg; from the center bend.']))
+    +box('4-Point Saddle (over a wide obstacle / another conduit rack)',
+      fx('Layout','two offsets, back-to-back')
+      +ul(['Treat it as two offsets: bend up onto the obstacle, run across it, bend back down.','Marks 1&amp;2 and marks 3&amp;4 each use the offset multiplier for the depth; the middle run (marks 2 to 3) equals the obstacle width.','Bends 1 &amp; 4 kick one way, 2 &amp; 3 the other - keep them all in-plane.']))
+    +box('Kick (single-bend offset)',
+      fx('Mark to end of kick','Kick offset x multiplier')
+      +ul(['A one-bend nudge - to line up a stub with a knockout or straighten a pull.','Distance from the bend mark to the end = kick offset x the angle multiplier.','<strong>Arrow</strong> on the mark, bend to angle, and rotate the conduit in the bender to aim the kick where you need it.']))
+    +box('Rolling Offset (rise AND roll at once)',
+      fx('True offset','&radic;(rise&sup2; + roll&sup2;)')
+      +fx('Distance between marks','True offset x multiplier')
+      +fx('Bender roll','arctan(roll / rise) from plumb')
+      +ul(['Used when a run must move up <em>and</em> sideways to hit a fitting - like offsetting to a box on a different plane.','Find the true offset from rise and roll, then mark it like a normal offset.','Rotate the conduit the "roll" angle in the bender for <strong>both</strong> bends so it travels the diagonal.']))
+    +box('Parallel Offsets (keeping a rack uniform)',
+      fx('Adder per conduit','tan(angle / 2) x center-to-center spacing')
+      +ul(['When several conduits offset together and must stay evenly spaced through the turn.','Lay out the first conduit normally. Shift every following conduit\'s marks ahead by the adder so the bends nest parallel.']))
+    +box('Tips &amp; Tricks',ul([
+      '<strong>Always dry-check on the first piece</strong> before running a whole bundle - confirm take-up and springback on scrap.',
+      '<strong>Springback:</strong> EMT relaxes ~2-5&deg; after bending. Pull a touch past the line, or overbend and set it back to the exact angle on the floor.',
+      '<strong>Keep it flat:</strong> bend against a flat floor and sight the pipe after each bend to kill dog-legs.',
+      '<strong>Mind the direction:</strong> for offsets, the second bend is the conduit flipped 180&deg; - it\'s easy to bend the wrong way and waste a stick.',
+      '<strong>Gain:</strong> a 90&deg; bend "gains" length (the pipe is shorter around the corner than two straight legs). For tight developed-length work, account for gain - the Multi-Bend tab lays out marks as bend points.',
+      '<strong>Deburr &amp; ream</strong> every cut before pulling wire - NEC 300.4(G).',
+      '<strong>360&deg; max between pull points</strong> - NEC 358.26 (EMT). Four 90s and you must pull; plan boxes accordingly.'
+    ]));
+}
 function renderConduitbend(){
   var angOpts=BEND_ANGLES.map(function(a){return '<option value="'+a[0]+'"'+(a[0]==='30'?' selected':'')+'>'+a[0]+'&deg;</option>';}).join('');
   var szOpts=Object.keys(STUB_TAKEUP).map(function(s){return '<option'+(s==='3/4"'?' selected':'')+'>'+s+'</option>';}).join('');
@@ -500,7 +558,9 @@ function renderConduitbend(){
     +'<button class="tab-btn" onclick="cbTab(\'b2b\',this)">Back-to-Back 90s</button>'
     +'<button class="tab-btn" onclick="cbTab(\'roll\',this)">Rolling Offset</button>'
     +'<button class="tab-btn" onclick="cbTab(\'par\',this)">Parallel Offsets</button>'
-    +'<button class="tab-btn" onclick="cbTab(\'multi\',this)">Multi-Bend</button></div>'
+    +'<button class="tab-btn" onclick="cbTab(\'multi\',this)">Multi-Bend</button>'
+    +'<button class="tab-btn" onclick="cbTab(\'guide\',this)">&#128218; How-To Guide</button></div>'
+    +'<div id="cb-guide" style="display:none">'+cbGuideHTML()+'</div>'
     +'<div id="cb-offset"><div class="row"><div class="field"><label>Obstacle Depth (in)</label><input type="number" id="cb-od" value="6" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
     +'<div class="field"><label>Bend Angle</label><select id="cb-oa" onchange="cbUpdate()">'+angOpts+'</select></div></div><div id="cb-offset-result"></div></div>'
     +'<div id="cb-saddle" style="display:none"><div class="row"><div class="field"><label>Obstacle Depth (in)</label><input type="number" id="cb-sd" value="4" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
@@ -559,8 +619,8 @@ window['init_conduitbend']=function(){
   document.getElementById('cb-pdate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   cbMemFill();
 };
-var CB_MODES=['offset','kick','saddle','saddle4','stub','b2b','roll','par','multi'];
-window.cbTab=function(tab,btn){document.querySelectorAll('#cb-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');CB_MODES.forEach(function(m){document.getElementById('cb-'+m).style.display='none';});document.getElementById('cb-'+tab).style.display='block';_cbMode=tab;cbUpdate();};
+var CB_MODES=['offset','kick','saddle','saddle4','stub','b2b','roll','par','multi','guide'];
+window.cbTab=function(tab,btn){document.querySelectorAll('#cb-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');CB_MODES.forEach(function(m){document.getElementById('cb-'+m).style.display='none';});document.getElementById('cb-'+tab).style.display='block';_cbMode=tab;var cv=document.getElementById('cb-cv');if(cv)cv.style.display=tab==='guide'?'none':'block';cbUpdate();};
 window.cbUpdate=function(){var fn={offset:cbOffset,kick:cbKick,saddle:cbSaddle,saddle4:cbSaddle4,stub:cbStub,b2b:cbB2b,roll:cbRoll,par:cbPar,multi:cbMulti}[_cbMode];if(fn)fn();};
 function cbCtx(){var cv=document.getElementById('cb-cv');if(!cv)return null;var ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);ctx.fillStyle='#141414';ctx.fillRect(0,0,cv.width,cv.height);return ctx;}
 function cbMark(ctx,x,y,lbl,above){ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fillStyle='#141414';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#ccc';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText(lbl,x,above?y-14:y+22);}
@@ -1366,7 +1426,7 @@ function gfUpdate(){
     var selS='background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:5px 4px;border-radius:5px;font-size:12px;width:100%';
     var inpS='background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:5px 6px;border-radius:5px;font-size:12px;width:100%';
     var ws=wallSegs();
-    var szO=function(sel){return CONDUIT_TRADE_SIZES.map(function(s){return '<option value="'+s+'"'+(s===sel?' selected':'')+'>'+s+'</option>';}).join('');};
+    var szO=function(sel){return CONDUIT_TRADE_SIZES.map(function(s){return '<option'+(s===sel?' selected':'')+'>'+s+'</option>';}).join('');};
     var wO=function(sel,allowNone){
       var o=ws.map(function(w){return '<option value="'+w.id+'"'+(sel===w.id?' selected':'')+'>Side '+w.id+' ('+w.len+'")</option>';}).join('');
       o+='<option value="Bk"'+(sel==='Bk'?' selected':'')+'>Back</option>';
@@ -1430,7 +1490,10 @@ function gfUpdate(){
       if(val==='term')c.exitWall='--';
       else if(c.exitWall==='--'){var ws=wallSegs(),alt=ws.find(function(w){return w.id!==c.entryWall;})||ws[0];c.exitWall=alt.id;c.exitRow=1;c.exitOff=0;}
     }
-    else if(field==='sz'){c.sz=val;}
+    else if(field==='sz'){
+      if(CONDUIT_TRADE_SIZES.indexOf(val)<0&&CONDUIT_TRADE_SIZES.indexOf(val+'"')>=0)val+='"';
+      c.sz=val;
+    }
     refresh();
   };
   window._pbR2=function(id){conduits=conduits.filter(function(c){return c.id!==id;});if(_selId===id)_selId=null;refresh();};
@@ -1700,12 +1763,65 @@ function gfUpdate(){
 })();
 /* END PULL BOX IIFE */
 
-/* ===== TABLE HIGHLIGHT LOGIC ===== */
+/* ===== TABLE HIGHLIGHT LOGIC =====
+   Grid model: every cell gets a real column/row span [_c0.._c1] x [_r0.._r1]
+   computed from colSpan/rowSpan, so two-row headers (rowspan Size + colspan
+   Copper/Aluminum) map onto the body columns exactly. Selections are ranges so
+   clicking a merged header highlights its whole span. */
 var _tblSelCol=null,_tblSelRow=null;
-function tblClearHL(tbl){if(!tbl)return;tbl.querySelectorAll('.col-hl,.row-hl,.intersect').forEach(function(el){el.classList.remove('col-hl','row-hl','intersect');});tbl.querySelectorAll('tr').forEach(function(tr){tr.classList.remove('row-hl');});}
-function tblApplyHL(tbl){if(!tbl)return;tblClearHL(tbl);var rows=[...tbl.querySelectorAll('tr')];if(_tblSelCol!==null){rows.forEach(function(tr){var cells=[...tr.children];if(cells[_tblSelCol])cells[_tblSelCol].classList.add('col-hl');});}if(_tblSelRow!==null&&rows[_tblSelRow])rows[_tblSelRow].classList.add('row-hl');if(_tblSelCol!==null&&_tblSelRow!==null&&rows[_tblSelRow]){var cell=[...rows[_tblSelRow].children][_tblSelCol];if(cell){cell.classList.remove('col-hl');cell.classList.add('intersect');}}}
-function tblClick(e,tbl){var td=e.target.closest('td,th');if(!td||!tbl.contains(td))return;var rows=[...tbl.querySelectorAll('tr')],rowIdx=rows.indexOf(td.closest('tr')),rowCells=[...td.closest('tr').children],colIdx=rowCells.indexOf(td),isHdrRow=td.closest('tr').querySelectorAll('td').length===0;if(isHdrRow){_tblSelCol=(_tblSelCol===colIdx)?null:colIdx;}else{if(td.tagName==='TH'){_tblSelRow=(_tblSelRow===rowIdx)?null:rowIdx;}else{_tblSelCol=(_tblSelCol===colIdx)?null:colIdx;if(_tblSelCol!==null)_tblSelRow=(_tblSelRow===rowIdx)?null:rowIdx;else _tblSelRow=rowIdx;}}tblApplyHL(tbl);}
-function tblInit(tbl){if(!tbl)return;_tblSelCol=null;_tblSelRow=null;tbl.style.cursor='pointer';tbl.addEventListener('click',function(e){tblClick(e,tbl);});}
+function tblGrid(tbl){
+  var occ={},rows=tbl.rows;
+  for(var r=0;r<rows.length;r++){
+    var c=0,cells=rows[r].cells;
+    for(var i=0;i<cells.length;i++){
+      while(occ[r+','+c])c++;
+      var cell=cells[i],cs=cell.colSpan||1,rs=cell.rowSpan||1;
+      cell._c0=c;cell._c1=c+cs-1;cell._r0=r;cell._r1=r+rs-1;
+      cell._inHead=!!(cell.parentNode&&cell.parentNode.parentNode&&cell.parentNode.parentNode.tagName==='THEAD');
+      for(var rr=r;rr<r+rs;rr++)for(var cc=c;cc<c+cs;cc++)occ[rr+','+cc]=true;
+      c+=cs;
+    }
+  }
+}
+function tblClearHL(tbl){if(!tbl)return;var q=tbl.querySelectorAll('.col-hl,.row-hl,.intersect');for(var i=0;i<q.length;i++)q[i].classList.remove('col-hl','row-hl','intersect');}
+function tblOverlap(rng,a,b){return rng!==null&&a<=rng[1]&&b>=rng[0];}
+function tblApplyHL(tbl){
+  if(!tbl)return;tblClearHL(tbl);
+  var rows=tbl.rows;
+  for(var r=0;r<rows.length;r++){
+    var cells=rows[r].cells;
+    for(var i=0;i<cells.length;i++){
+      var cell=cells[i];
+      if(cell._c0===undefined){tblGrid(tbl);}
+      var inCol=tblOverlap(_tblSelCol,cell._c0,cell._c1);
+      var inRow=tblOverlap(_tblSelRow,cell._r0,cell._r1);
+      if(inCol&&inRow)cell.classList.add('intersect');
+      else if(inCol)cell.classList.add('col-hl');
+      else if(inRow)cell.classList.add('row-hl');
+    }
+  }
+}
+function tblSame(rng,a,b){return rng!==null&&rng[0]===a&&rng[1]===b;}
+function tblClick(e,tbl){
+  var td=e.target.closest('td,th');if(!td||!tbl.contains(td))return;
+  if(td._c0===undefined)tblGrid(tbl);
+  var c0=td._c0,c1=td._c1,r0=td._r0,r1=td._r1;
+  if(td._inHead){
+    // column header: select this column only, clear any row
+    _tblSelCol=tblSame(_tblSelCol,c0,c1)?null:[c0,c1];
+    _tblSelRow=null;
+  }else if(c0===0){
+    // row label: select this row only, clear any column
+    _tblSelRow=tblSame(_tblSelRow,r0,r1)?null:[r0,r1];
+    _tblSelCol=null;
+  }else{
+    // data cell: cross of row + column; click again to clear
+    if(tblSame(_tblSelCol,c0,c1)&&tblSame(_tblSelRow,r0,r1)){_tblSelCol=null;_tblSelRow=null;}
+    else{_tblSelCol=[c0,c1];_tblSelRow=[r0,r1];}
+  }
+  tblApplyHL(tbl);
+}
+function tblInit(tbl){if(!tbl)return;_tblSelCol=null;_tblSelRow=null;tbl.style.cursor='pointer';tblGrid(tbl);tbl.addEventListener('click',function(e){tblClick(e,tbl);});}
 
 /* ===== TABLES ===== */
 function renderT310(){
