@@ -13,80 +13,119 @@
 <title>Electrical Field Toolkit</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#111;color:#e8e8e8;min-height:100vh;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding-bottom:env(safe-area-inset-bottom)}
-#nav{background:#1a1a1a;border-bottom:1px solid #333;padding:env(safe-area-inset-top) calc(1.5rem + env(safe-area-inset-right)) 0 calc(1.5rem + env(safe-area-inset-left));display:flex;align-items:center;gap:1rem;height:calc(52px + env(safe-area-inset-top));position:sticky;top:0;z-index:100}
-#nav-title{font-size:15px;font-weight:600;color:#f90;letter-spacing:.5px;flex:1}
-.nav-back{display:none;background:none;border:1px solid #444;color:#ccc;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px}
-.nav-back:hover{border-color:#f90;color:#f90}
-#nav-breadcrumb{font-size:13px;color:#888}
-#home{padding:1.5rem}
-.section-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#666;margin:1.5rem 0 .75rem}
+:root{--bg:#101013;--card:#1a1a1f;--card2:#202026;--inp:#141418;--line:#2a2a30;--line2:#3a3a42;--txt:#ececf0;--mut:#9c9ca6;--dim:#6c6c76;--acc:#f90;--acc2:#ffb020;--good:#34c759;--warn:#ff9f0a;--bad:#ff453a;--r:14px}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding-bottom:env(safe-area-inset-bottom)}
+#nav{background:rgba(20,20,24,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:env(safe-area-inset-top) calc(1.25rem + env(safe-area-inset-right)) 0 calc(1.25rem + env(safe-area-inset-left));display:flex;align-items:center;gap:1rem;height:calc(60px + env(safe-area-inset-top));position:sticky;top:0;z-index:100}
+#nav-left{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:1px}
+#nav-title{font-size:16px;font-weight:700;color:var(--acc);letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#nav-breadcrumb{font-size:12px;color:var(--mut);font-weight:500;letter-spacing:.2px}
+#nav-breadcrumb:empty{display:none}
+.nav-back{display:none;background:var(--card);border:1px solid var(--line2);color:#d8d8de;padding:9px 16px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:600;flex:0 0 auto}
+.nav-back:hover{border-color:var(--acc);color:var(--acc)}
+#home{padding:1.5rem;max-width:860px;margin:0 auto}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--dim);margin:1.75rem 0 .9rem}
 .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
-.tool-card{background:#1e1e1e;border:1px solid #2e2e2e;border-radius:10px;padding:1rem;cursor:pointer;transition:border-color .15s,background .15s}
-.tool-card:hover{border-color:#f90;background:#222}
-.tool-card .icon{font-size:22px;margin-bottom:.5rem}
-.tool-card .name{font-size:14px;font-weight:600;color:#e8e8e8;margin-bottom:4px}
-.tool-card .desc{font-size:12px;color:#888;line-height:1.4}
-#tool-view{display:none;padding:1.5rem;max-width:720px}
+.tool-card{background:linear-gradient(180deg,#1e1e24,#191a1f);border:1px solid var(--line);border-radius:16px;padding:1.1rem 1rem;cursor:pointer;transition:border-color .15s,transform .12s,box-shadow .15s}
+.tool-card:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.tool-card:active{transform:translateY(0)}
+.tool-card .icon{font-size:26px;margin-bottom:.6rem}
+.tool-card .name{font-size:14.5px;font-weight:700;color:var(--txt);margin-bottom:4px}
+.tool-card .desc{font-size:12px;color:var(--mut);line-height:1.45}
+#tool-view{display:none;padding:1.5rem;max-width:760px;margin:0 auto}
 .tool-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
-.tool-title{font-size:18px;font-weight:600;color:#f90}
-.reset-btn{background:none;border:1px solid #444;color:#888;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px}
-.reset-btn:hover{border-color:#f90;color:#f90}
+.tool-title{font-size:22px;font-weight:800;color:var(--acc);letter-spacing:.2px}
+.reset-btn{background:var(--card);border:1px solid var(--line2);color:var(--mut);padding:8px 16px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:600}
+.reset-btn:hover{border-color:var(--acc);color:var(--acc)}
 .field{margin-bottom:1rem}
-.field label{display:block;font-size:12px;font-weight:500;color:#aaa;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.field select,.field input[type=number],.field input[type=text]{width:100%;background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:8px 10px;border-radius:6px;font-size:14px;outline:none}
-.field select:focus,.field input:focus{border-color:#f90}
-.field textarea{width:100%;background:#1a1a1a;border:1px solid #333;color:#e8e8e8;padding:8px 10px;border-radius:6px;font-size:14px;outline:none;resize:vertical}
-.field textarea:focus{border-color:#f90}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
-.btn{background:#f90;color:#111;border:none;padding:9px 20px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-top:.5rem}
-.btn:hover{background:#ffb020}
-.result-box{background:#1e1e1e;border:1px solid #2e2e2e;border-radius:8px;padding:1rem 1.25rem;margin-top:1.25rem}
-.result-box h3{font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
-.result-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #252525}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--mut);margin-bottom:7px;text-transform:uppercase;letter-spacing:.7px}
+.field select,.field input[type=number],.field input[type=text],.field input[type=date]{width:100%;background:var(--inp);border:1px solid var(--line2);color:var(--txt);padding:12px 13px;border-radius:11px;font-size:15px;font-weight:500;outline:none;transition:border-color .12s,box-shadow .12s;min-height:46px}
+.field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888890' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}
+.field select:focus,.field input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(255,153,0,.16)}
+.field input::placeholder{color:var(--dim);font-style:italic;font-weight:400}
+.field textarea{width:100%;background:var(--inp);border:1px solid var(--line2);color:var(--txt);padding:12px 13px;border-radius:11px;font-size:15px;outline:none;resize:vertical;transition:border-color .12s,box-shadow .12s}
+.field textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(255,153,0,.16)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem}
+.btn{display:block;width:100%;background:linear-gradient(180deg,var(--acc2),var(--acc));color:#141414;border:none;padding:15px 20px;border-radius:13px;font-size:16px;font-weight:800;letter-spacing:.2px;cursor:pointer;margin:1rem 0 .5rem;box-shadow:0 4px 14px rgba(255,153,0,.18);transition:transform .1s,box-shadow .15s}
+.btn:hover{box-shadow:0 6px 18px rgba(255,153,0,.28)}
+.btn:active{transform:scale(.985)}
+.result-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.1rem 1.25rem;margin-top:1.1rem}
+.result-box h3{font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:.8rem}
+.result-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #242428}
 .result-row:last-child{border-bottom:none}
-.result-label{font-size:13px;color:#aaa}
-.result-value{font-size:15px;font-weight:600;color:#f0f0f0}
-.result-value.good{color:#4caf50}
-.result-value.warn{color:#ff9800}
-.result-value.bad{color:#f44336}
-.result-note{font-size:12px;color:#777;margin-top:.5rem;line-height:1.5}
+.result-label{font-size:13.5px;color:var(--mut)}
+.result-value{font-size:15.5px;font-weight:700;color:var(--txt);text-align:right}
+.result-value.good{color:var(--good)}
+.result-value.warn{color:var(--warn)}
+.result-value.bad{color:var(--bad)}
+.result-note{position:relative;background:#17171c;border:1px solid var(--line);border-radius:12px;padding:12px 14px 12px 42px;font-size:12.5px;color:var(--mut);margin-top:.9rem;line-height:1.6}
+.result-note::before{content:"i";position:absolute;left:13px;top:12px;width:19px;height:19px;border-radius:50%;border:1.5px solid var(--acc);color:var(--acc);font-weight:800;font-size:11px;font-style:italic;font-family:Georgia,serif;display:flex;align-items:center;justify-content:center}
+.result-box .result-note{background:#141419;margin-top:.8rem}
 .gauge-wrap{margin-top:.75rem}
-.gauge-bar{height:18px;background:#2a2a2a;border-radius:9px;overflow:hidden;margin-bottom:6px}
-.gauge-fill{height:100%;border-radius:9px;transition:width .4s}
-.ref-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:.5rem}
-.ref-table th{background:#1e1e1e;color:#aaa;font-weight:600;text-align:left;padding:7px 10px;border-bottom:1px solid #333;font-size:11px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
-.ref-table td{padding:6px 10px;border-bottom:1px solid #222;color:#d0d0d0;cursor:pointer}
-.ref-table tr:hover td{background:#1c1c1c}
+.gauge-bar{height:20px;background:#26262c;border-radius:10px;overflow:hidden;margin-bottom:6px;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+.gauge-fill{height:100%;border-radius:10px;transition:width .4s}
+.ref-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:.5rem}
+.ref-table th{background:#1d1d23;color:var(--mut);font-weight:700;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line2);font-size:11px;text-transform:uppercase;letter-spacing:.6px;cursor:pointer}
+.ref-table td{padding:9px 12px;border-bottom:1px solid #202026;color:#d6d6dc;cursor:pointer}
+.ref-table tbody tr:nth-child(even) td{background:#17171c}
+.ref-table tr:hover td{background:#1e1e25}
 .ref-table td.col-hl{background:#1e2a1a !important}
 .ref-table th.col-hl{background:#1e2a1a !important;color:#8bc34a}
 .ref-table td.row-hl{background:#1a1e2a !important}
 .ref-table th.row-hl{background:#1a1e2a !important;color:#7cb0f0}
-.ref-table td.intersect,.ref-table th.intersect{background:#2d3a1a !important;outline:2px solid #f90;outline-offset:-2px;color:#f90 !important;font-weight:700;border-radius:2px}
-.wire-row{display:grid;grid-template-columns:1fr 1fr 1fr 32px;gap:8px;align-items:end;margin-bottom:8px}
+.ref-table td.intersect,.ref-table th.intersect{background:#2d3a1a !important;outline:2px solid var(--acc);outline-offset:-2px;color:var(--acc) !important;font-weight:700;border-radius:2px}
+.wire-row{display:grid;grid-template-columns:1fr 1fr 1fr 38px;gap:8px;align-items:end;margin-bottom:8px}
 .wire-row .field{margin-bottom:0}
-.remove-btn{background:#2a2a2a;border:1px solid #444;color:#f44336;width:30px;height:36px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;margin-top:20px}
-.remove-btn:hover{background:#3a1a1a;border-color:#f44336}
-.add-wire-btn{background:none;border:1px dashed #444;color:#888;padding:7px 14px;border-radius:6px;font-size:13px;cursor:pointer;margin-bottom:1rem}
-.add-wire-btn:hover{border-color:#f90;color:#f90}
-.tab-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-.tab-btn{background:#1e1e1e;border:1px solid #333;color:#aaa;padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer}
-.tab-btn.active{background:#f90;color:#111;border-color:#f90;font-weight:600}
-.err{color:#f44336;font-size:13px;margin-top:.5rem}
+.remove-btn{background:var(--card2);border:1px solid var(--line2);color:var(--bad);width:38px;height:46px;border-radius:11px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;margin-top:20px}
+.remove-btn:hover{background:#2c1b1b;border-color:var(--bad)}
+.add-wire-btn{background:none;border:1.5px dashed var(--line2);color:var(--mut);padding:11px 18px;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer;margin-bottom:1rem}
+.add-wire-btn:hover{border-color:var(--acc);color:var(--acc)}
+.tab-row{display:flex;gap:7px;margin-bottom:1.1rem;flex-wrap:wrap}
+.tab-btn{background:var(--card);border:1px solid var(--line2);color:var(--mut);padding:9px 16px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s}
+.tab-btn:hover{border-color:var(--acc);color:var(--acc)}
+.tab-btn.active{background:linear-gradient(180deg,var(--acc2),var(--acc));color:#141414;border-color:var(--acc);font-weight:700}
+.err:not(:empty){display:block;position:relative;background:rgba(255,69,58,.08);border:1px solid rgba(255,69,58,.35);border-radius:12px;padding:11px 14px 11px 40px;color:#ff8a80;font-size:13px;margin-top:.6rem;line-height:1.5}
+.err:not(:empty)::before{content:"!";position:absolute;left:13px;top:11px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--bad);color:var(--bad);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center}
+.stp{display:flex;align-items:stretch;border:1px solid var(--line2);border-radius:11px;overflow:hidden;background:var(--inp);transition:border-color .12s,box-shadow .12s}
+.stp:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px rgba(255,153,0,.16)}
+.stp>input[type=number]{border:none !important;border-radius:0 !important;box-shadow:none !important;background:transparent !important;text-align:center;min-width:0;flex:1}
+.stp-btn{width:46px;flex:0 0 46px;border:none;background:var(--card2);color:#d8d8de;font-size:21px;font-weight:600;cursor:pointer;line-height:1;transition:background .1s}
+.stp-btn:first-child{border-right:1px solid var(--line)}
+.stp-btn:last-child{border-left:1px solid var(--line)}
+.stp-btn:active{background:var(--acc);color:#141414}
+.hero{display:flex;align-items:center;gap:20px;padding:6px 0 12px}
+.hero-ring{width:112px;height:112px;flex:0 0 112px;transform:rotate(-90deg)}
+.hero-track{fill:none;stroke:#2a2a31;stroke-width:11}
+.hero-fill{fill:none;stroke-width:11;stroke-linecap:round;transition:stroke-dashoffset .5s ease}
+.hero-body{min-width:0}
+.hero-num{font-size:36px;font-weight:800;color:#fff;line-height:1.05;letter-spacing:-.5px}
+.hero-num small{font-size:17px;font-weight:700;color:var(--mut);margin-left:3px}
+.hero-sub{font-size:13px;color:var(--mut);margin-top:5px;line-height:1.5}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:700;margin-top:9px}
+.chip b{font-weight:800;font-size:13px}
+.chip-good{background:rgba(52,199,89,.13);color:var(--good);border:1px solid rgba(52,199,89,.3)}
+.chip-warn{background:rgba(255,159,10,.13);color:var(--warn);border:1px solid rgba(255,159,10,.3)}
+.chip-bad{background:rgba(255,69,58,.13);color:var(--bad);border:1px solid rgba(255,69,58,.3)}
 @media (max-width:640px){
   #home,#tool-view{padding:1rem}
   .card-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
   .row3{grid-template-columns:1fr 1fr}
-  .tool-card{padding:.8rem}
-  .btn,.add-wire-btn,.tab-btn{min-height:38px}
+  .tool-card{padding:.9rem .8rem}
+  .btn,.add-wire-btn,.tab-btn{min-height:40px}
+  .tool-title{font-size:19px}
+  .stp-btn{width:42px;flex-basis:42px}
+  .hero{gap:14px}
+  .hero-ring{width:96px;height:96px;flex-basis:96px}
+  .hero-num{font-size:30px}
 }
 </style>
 </head>
 <body>
 <div id="nav">
-  <div id="nav-title">&#9889; Electrical Field Toolkit</div>
-  <span id="nav-breadcrumb"></span>
+  <div id="nav-left">
+    <div id="nav-title">&#9889; Electrical Field Toolkit</div>
+    <div id="nav-breadcrumb"></div>
+  </div>
   <button class="nav-back" id="back-btn" onclick="goHome()">&#8592; Home</button>
 </div>
 <div id="home">
@@ -182,6 +221,39 @@ function openTool(id,label){
   document.getElementById('back-btn').style.display='inline-block';
   document.getElementById('nav-breadcrumb').textContent=label;
   if(typeof window['init_'+id]==='function') window['init_'+id]();
+  enhanceSteppers();
+}
+/* Wrap standard number inputs in a -/+ stepper shell. Skips compact grids
+   (conduit-fill wire rows, pull box cards, multi-bend rows) and the Ohm's wheel. */
+function enhanceSteppers(){
+  var tv=document.getElementById('tool-view');if(!tv)return;
+  tv.querySelectorAll('.field > input[type=number]').forEach(function(inp){
+    if(inp.dataset.stp||inp.classList.contains('ol-in'))return;
+    if(inp.closest('.wire-row')||inp.closest('#pb-list')||inp.closest('#mb-rows'))return;
+    inp.dataset.stp='1';
+    var wrap=document.createElement('div');wrap.className='stp';
+    inp.parentNode.insertBefore(wrap,inp);
+    var dn=document.createElement('button');dn.type='button';dn.className='stp-btn';dn.textContent='−';
+    var up=document.createElement('button');up.type='button';up.className='stp-btn';up.textContent='+';
+    wrap.appendChild(dn);wrap.appendChild(inp);wrap.appendChild(up);
+    function step(dir){
+      var s=parseFloat(inp.step);if(!isFinite(s)||s<=0)s=1;
+      var v=parseFloat(inp.value);
+      if(!isFinite(v)){v=parseFloat(inp.min);if(!isFinite(v))v=0;}
+      else v=v+dir*s;
+      var mn=parseFloat(inp.min),mx=parseFloat(inp.max);
+      if(isFinite(mn)&&v<mn)v=mn;
+      if(isFinite(mx)&&v>mx)v=mx;
+      var dec=(String(s).split('.')[1]||'').length;
+      var out=v.toFixed(dec);
+      if(dec>0)out=out.replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'');
+      inp.value=out;
+      inp.dispatchEvent(new Event('input',{bubbles:true}));
+      inp.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    dn.addEventListener('click',function(e){e.preventDefault();step(-1);});
+    up.addEventListener('click',function(e){e.preventDefault();step(1);});
+  });
 }
 
 /* ===== REGISTRY ===== */
@@ -242,6 +314,15 @@ function rb(html){return '<div class="result-box">'+html+'</div>';}
 function rh(t){return '<h3>'+t+'</h3>';}
 function rr(l,v,cls){return '<div class="result-row"><span class="result-label">'+l+'</span><span class="result-value'+(cls?' '+cls:'')+'" >'+v+'</span></div>';}
 function rn(t){return '<div class="result-note">'+t+'</div>';}
+/* Hero result components: donut ring + big number, and big number alone */
+function heroRing(pct,color,num,unit,sub,chipHtml){
+  var r=44,c=2*Math.PI*r,off=c*(1-Math.max(0,Math.min(pct,100))/100);
+  return '<div class="hero"><svg class="hero-ring" viewBox="0 0 110 110"><circle class="hero-track" cx="55" cy="55" r="'+r+'"/><circle class="hero-fill" cx="55" cy="55" r="'+r+'" stroke="'+color+'" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg><div class="hero-body"><div class="hero-num">'+num+'<small>'+unit+'</small></div><div class="hero-sub">'+sub+'</div>'+(chipHtml||'')+'</div></div>';
+}
+function heroNum(num,unit,sub,chipHtml){
+  return '<div class="hero"><div class="hero-body"><div class="hero-num">'+num+'<small>'+unit+'</small></div><div class="hero-sub">'+sub+'</div>'+(chipHtml||'')+'</div></div>';
+}
+function hchip(cls,txt){return '<div class="chip chip-'+cls+'">'+(cls==='good'?'&#10003;':cls==='warn'?'&#9888;':'&#10005;')+' <b>'+txt+'</b></div>';}
 
 /* ===== 1. VOLTAGE DROP ===== */
 function renderVdrop(){
@@ -266,7 +347,10 @@ function calcVdrop(){
   if(mode==='vd'){
     var sz=document.getElementById('vd-size').value,R=RT[sz];if(!R){err.textContent='No resistance data.';return;}
     var vdV=(amps*(R/1000)*len*pm)/par,vdP=(vdV/volt)*100,cls=vdP<=3?'good':vdP<=5?'warn':'bad';
-    document.getElementById('vd-result').innerHTML=rb(rh('Result')+rr('Voltage Drop',vdV.toFixed(2)+' V','')+rr('Voltage Drop %',vdP.toFixed(2)+'%',cls)+rr('Receiving Voltage',(volt-vdV).toFixed(1)+' V',(volt-vdV)<=0?'bad':'')+rr('NEC 3% Limit',vdP<=3?'Pass':'Exceeds',cls));
+    var colr=vdP<=3?'#34c759':vdP<=5?'#ff9f0a':'#ff453a';
+    document.getElementById('vd-result').innerHTML=rb(rh('Voltage Drop')
+      +heroRing(Math.min(vdP/5*100,100),colr,vdP.toFixed(2),'%',vdV.toFixed(2)+' V dropped over '+len+' ft &middot; ring shows the 0-5% NEC window',hchip(vdP<=3?'good':vdP<=5?'warn':'bad',vdP<=3?'Within 3% branch-circuit guideline':vdP<=5?'Over 3% - within 5% total':'Exceeds 5% total'))
+      +rr('Voltage Drop',vdV.toFixed(2)+' V','')+rr('Receiving Voltage',(volt-vdV).toFixed(1)+' V',(volt-vdV)<=0?'bad':''));
   } else if(mode==='minsize'){
     var maxvd=parseFloat(document.getElementById('vd-maxvd').value)/100,maxVdV=volt*maxvd,maxR=(maxVdV*par)/(amps*(len/1000)*pm);
     var found=WIRE_SIZES.find(function(s){return RT[s]&&RT[s]<=maxR;});
@@ -318,7 +402,10 @@ function calcCfill(){
   var condArea=row[2],fillPct=(g.total/condArea)*100,allowedPct=g.count===1?53:g.count===2?31:40,pass=fillPct<=allowedPct;
   var gc=pass?(fillPct<25?'#4caf50':fillPct<35?'#ff9800':'#ff6f00'):'#f44336';
   var bkHtml=g.bk.map(function(b){return rr(b.qty+'x '+b.wsz+' AWG '+b.ins,b.area.toFixed(4)+' in2','');}).join('');
-  document.getElementById('cf-result').innerHTML=rb(rh('Fill Analysis')+bkHtml+rr('Total Wire Area',g.total.toFixed(4)+' in2','')+rr('Conduit Area',condArea.toFixed(3)+' in2','')+'<div class="gauge-wrap"><div style="display:flex;justify-content:space-between;font-size:12px;color:#aaa;margin-bottom:4px"><span>Fill: <strong style="color:'+gc+'">'+fillPct.toFixed(1)+'%</strong></span><span>Limit: '+allowedPct+'%</span></div><div class="gauge-bar"><div class="gauge-fill" style="width:'+Math.min(fillPct,100).toFixed(0)+'%;background:'+gc+'"></div></div></div>'+rr('NEC Compliance',pass?'Pass':'Exceeds Limit',pass?'good':'bad'));
+  var remPct=allowedPct-fillPct;
+  document.getElementById('cf-result').innerHTML=rb(rh('Fill Results')
+    +heroRing(fillPct,gc,fillPct.toFixed(1),'%','of '+size+' '+type+' capacity used &middot; NEC limit '+allowedPct+'%'+(pass?'<br>Remaining to limit: <strong style="color:'+gc+'">'+remPct.toFixed(1)+'%</strong>':''),hchip(pass?'good':'bad',pass?'Within NEC limit ('+allowedPct+'%)':'Exceeds NEC limit ('+allowedPct+'%)'))
+    +bkHtml+rr('Total Wire Area',g.total.toFixed(4)+' in2','')+rr('Conduit Area',condArea.toFixed(3)+' in2',''));
 }
 function calcCfMin(){
   var type=document.getElementById('cfm-type').value,g=gatherWires('cfm-wires');
@@ -357,7 +444,11 @@ function calcAmpacity(){
   if(cccs>=4){var dr=DERATING.find(function(d){return cccs>=d[0]&&cccs<=d[1];});if(dr)fillFactor=dr[2];}
   var derated=baseAmp*Tcf*fillFactor;
   var sc244={cu:{'14':'15 A','12':'20 A','10':'30 A'},al:{'12':'15 A','10':'25 A'}}[cond][sz];
-  document.getElementById('amp-result').innerHTML=rb(rh('Result')+rr('Base Ampacity (310.16)',baseAmp+' A','')+rr('Ambient Correction ('+amb+'C)',Tcf.toFixed(3),'')+rr('Fill Derating ('+cccs+' CCCs)',fillFactor===1?'None':fillFactor.toFixed(2),'')+rr('Derated Ampacity',derated.toFixed(1)+' A','good')+(sc244?rn('NEC 240.4(D): overcurrent protection for this conductor may not exceed '+sc244+' regardless of ampacity (exceptions: motors, certain taps).'):''));
+  var retPct=baseAmp>0?derated/baseAmp*100:0;
+  document.getElementById('amp-result').innerHTML=rb(rh('Wire Ampacity')
+    +heroRing(retPct,'#f90',derated.toFixed(1),'A','Allowable ampacity &middot; '+(retPct>=99.9?'no derating applied':retPct.toFixed(0)+'% of base after derating'),hchip('good','Based on NEC Table 310.16'))
+    +rr('Base Ampacity (310.16)',baseAmp+' A','')+rr('Ambient Correction ('+amb+'C)',Tcf.toFixed(3),'')+rr('Fill Derating ('+cccs+' CCCs)',fillFactor===1?'None':fillFactor.toFixed(2),'')
+    +(sc244?rn('NEC 240.4(D): overcurrent protection for this conductor may not exceed '+sc244+' regardless of ampacity (exceptions: motors, certain taps).'):''));
 }
 
 /* ===== 4. BOX FILL ===== */
@@ -374,7 +465,10 @@ function calcBoxFill(){
   function bfn(id){return Math.max(0,parseInt(document.getElementById(id).value)||0);}
   var vol=parseFloat(document.getElementById('bf-sz').value),cin=bfn('bf-cin'),cout=bfn('bf-cout'),cpt=bfn('bf-cpt'),dev=bfn('bf-dev'),clamp=bfn('bf-clamp'),stud=bfn('bf-stud'),egc=bfn('bf-egc');
   var condVol=(cin+cout+cpt)*vol,devVol=dev*2*vol,clampVol=clamp>0?vol:0,studVol=stud*vol,egcVol=egc>0?vol*(1+Math.max(0,egc-4)*0.25):0,total=condVol+devVol+clampVol+studVol+egcVol;
-  document.getElementById('bf-result').innerHTML=rb(rh('Box Fill')+rr('Conductors ('+(cin+cout+cpt)+'x'+vol+')',condVol.toFixed(2)+' in3','')+rr('Devices ('+dev+'x2x'+vol+')',devVol.toFixed(2)+' in3','')+rr('Clamps / Studs / EGC',(clampVol+studVol+egcVol).toFixed(2)+' in3','')+rr('Minimum Box Volume','<span style="font-size:18px">'+total.toFixed(2)+'</span> in3','good'))+rn('Common: single-gang=18-21 in3 | 4x4 square=21-30 in3 | 4x4 deep=42 in3');
+  document.getElementById('bf-result').innerHTML=rb(rh('Box Fill')
+    +heroNum(total.toFixed(2),'in&sup3;','Minimum box volume required',hchip('good','Sized per NEC 314.16(B)'))
+    +rr('Conductors ('+(cin+cout+cpt)+'x'+vol+')',condVol.toFixed(2)+' in3','')+rr('Devices ('+dev+'x2x'+vol+')',devVol.toFixed(2)+' in3','')+rr('Clamps / Studs / EGC',(clampVol+studVol+egcVol).toFixed(2)+' in3',''))
+    +rn('Common: single-gang=18-21 in3 | 4x4 square=21-30 in3 | 4x4 deep=42 in3');
 }
 
 /* ===== 5. POWER / CURRENT ===== */
@@ -413,7 +507,9 @@ function calcPower(){
     if(kva>0)pf=kw/kva;
   }
   var kvar=Math.sqrt(Math.max(0,kva*kva-kw*kw));
-  document.getElementById('pw-result').innerHTML=rb(rh('Result')+rr('Apparent Power',kva.toFixed(3)+' kVA','')+rr('Real Power',kw.toFixed(3)+' kW','')+rr('Reactive Power',kvar.toFixed(3)+' kVAR','')+rr('Current',amps.toFixed(2)+' A','good')+rr('Power Factor',pf.toFixed(3)+' ('+(pf*100).toFixed(1)+'%)',''));
+  document.getElementById('pw-result').innerHTML=rb(rh('Result')
+    +heroNum(amps.toFixed(2),'A','Line current at '+volt+' V '+(mult>1?'three-phase':'single-phase')+' &middot; PF '+pf.toFixed(3),null)
+    +rr('Apparent Power',kva.toFixed(3)+' kVA','')+rr('Real Power',kw.toFixed(3)+' kW','')+rr('Reactive Power',kvar.toFixed(3)+' kVAR','')+rr('Power Factor',pf.toFixed(3)+' ('+(pf*100).toFixed(1)+'%)',''));
 }
 
 /* ===== 6. CU TO AL ===== */
@@ -604,7 +700,7 @@ function renderConduitbend(){
     +'<div class="field"><label>Description (optional)</label><textarea id="cb-pdesc" rows="3" placeholder="Kick direction, matching set, delivery location, etc."></textarea></div>'
     +'<div id="cb-p-err" class="err"></div>'
     +'<button class="btn" onclick="cbExport(false)">&#128190; Save Form Locally</button>'
-    +'<button class="btn" style="margin-left:8px" onclick="cbExport(true)">&#9993; Email Order</button>'
+    +'<button class="btn" onclick="cbExport(true)">&#9993; Email Order</button>'
     +'<div class="result-note" style="margin-top:.5rem">Email opens your mail app with the order text pre-filled; the form image downloads first - attach it from Downloads (browsers cannot auto-attach files). Job and requester info is saved on this device for reuse.</div>'
     +'</div>';
 }
@@ -1222,7 +1318,7 @@ function gfUpdate(){
       +'<div class="field"><label>Description (optional)</label><textarea id="pb-pdesc" rows="3" placeholder="Material, NEMA rating, cover style, mounting, delivery location..."></textarea></div>'
       +'<div id="pb-p-err" class="err"></div>'
       +'<button class="btn" onclick="pbExport(false)">&#128190; Save Form Locally</button>'
-      +'<button class="btn" style="margin-left:8px" onclick="pbExport(true)">&#9993; Email Order</button>'
+      +'<button class="btn" onclick="pbExport(true)">&#9993; Email Order</button>'
       +'<div class="result-note" style="margin-top:.5rem">Email opens your mail app with the order text pre-filled; the form image downloads first - attach it from Downloads. Saved jobs and requesters are shared with the conduit bending tool.</div>'
       +'</div>';
   };
@@ -2152,7 +2248,7 @@ function renderConvtable(){
     +'<button class="tab-btn" onclick="cvTab(\'prefix\',this)">SI Prefixes</button></div>'
     +'<div id="cv-units"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:.75rem">'
     +'<div class="field" style="margin:0;flex:0 0 100px"><label>Value</label><input type="number" id="cv-val" value="1" step="any" oninput="cvConvert()"></div>'
-    +'<div class="field" style="margin:0;flex:1"><label>From</label><select id="cv-from" onchange="cvConvert()"></select></div>'
+    +'<div class="field" style="margin:0;flex:1"><label>From</label><select id="cv-from" onchange="cvFromChanged()"></select></div>'
     +'<div class="field" style="margin:0;flex:1"><label>To</label><select id="cv-to" onchange="cvConvert()"></select></div></div>'
     +'<div id="cv-unit-result"></div>'
     +'<div class="result-box" style="margin-top:1rem"><h3>Common Electrical Conversions</h3>'
@@ -2226,13 +2322,22 @@ window.cvFromChanged=function(){
   cvConvert();
 };
 window.cvConvert=function(){
-  var v=+document.getElementById('cv-val').value,from=document.getElementById('cv-from').value,to=document.getElementById('cv-to').value,bf=CV_BASE[from],bt=CV_BASE[to];
-  if(!bf||!bt){document.getElementById('cv-unit-result').innerHTML='<div class="err">Incompatible units.</div>';return;}
+  var raw=document.getElementById('cv-val').value,from=document.getElementById('cv-from').value,to=document.getElementById('cv-to').value,bf=CV_BASE[from],bt=CV_BASE[to];
+  var res=document.getElementById('cv-unit-result');
+  if(raw.trim()===''){res.innerHTML='<div class="err">Enter a value to convert.</div>';return;}
+  var v=parseFloat(raw);
+  if(!isFinite(v)){res.innerHTML='<div class="err">Enter a valid number.</div>';return;}
+  // hard guard: units must exist AND share a category (no inches-to-horsepower)
+  if(!bf||!bt||cvCatOf(from)!==cvCatOf(to)||cvCatOf(from)===null){
+    res.innerHTML='<div class="err">Those units do not convert to each other - pick a matching unit type.</div>';
+    return;
+  }
   var result=(v*bf)/bt;
-  document.getElementById('cv-unit-result').innerHTML=rb(rr(v+' '+from.replace('_',''),result.toPrecision(6).replace(/\.?0+$/,'')+' '+to.replace('_',''),'good'));
+  res.innerHTML=rb(rr(v+' '+from.replace('_',''),result.toPrecision(6).replace(/\.?0+$/,'')+' '+to.replace('_',''),'good'));
 };
 window.cvWire=function(){
   var el=document.getElementById('cv-wval');if(!el)return;
+  if(el.value.trim()===''||!isFinite(parseFloat(el.value))){document.getElementById('cv-wire-result').innerHTML='<div class="err">Enter a value to convert.</div>';return;}
   var v=+el.value,from=document.getElementById('cv-wfrom').value,kcmil;
   if(from==='kcmil')kcmil=v;else if(from==='cmil')kcmil=v/1000;else if(from==='mm2')kcmil=v/0.5067;else kcmil=v/0.0007854;
   var cmil=kcmil*1000,mm2=kcmil*0.5067,in2=kcmil*0.0007854;
@@ -2240,6 +2345,7 @@ window.cvWire=function(){
 };
 window.cvTemp=function(){
   var el=document.getElementById('cv-tval');if(!el)return;
+  if(el.value.trim()===''||!isFinite(parseFloat(el.value))){document.getElementById('cv-temp-result').innerHTML='<div class="err">Enter a value to convert.</div>';return;}
   var v=+el.value,from=document.getElementById('cv-tfrom').value,c,f,k;
   if(from==='C'){c=v;f=c*9/5+32;k=c+273.15;}else if(from==='F'){f=v;c=(f-32)*5/9;k=c+273.15;}else{k=v;c=k-273.15;f=c*9/5+32;}
   document.getElementById('cv-temp-result').innerHTML=rb(rh('Result')+rr('Celsius',c.toFixed(2)+' C','good')+rr('Fahrenheit',f.toFixed(2)+' F','')+rr('Kelvin',k.toFixed(2)+' K',''));
