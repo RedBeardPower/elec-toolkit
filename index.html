@@ -1867,38 +1867,72 @@ window['init_twire']=function(){tblInit(document.getElementById('tbl-wire'));};
 
 /* ===== CALCULATIONS & CONVERSIONS ===== */
 
-/* --- OHM'S LAW --- */
+/* --- OHM'S LAW (wheel) --- */
 function renderOhmslaw(){
-  return '<div style="font-size:12px;color:#888;margin-bottom:.75rem">Enter any two known values. Leave the others blank to solve.</div>'
-    +'<div class="row"><div class="field"><label>Voltage E (Volts)</label><input type="number" id="ol-v" placeholder="solve" step="any" min="0"></div>'
-    +'<div class="field"><label>Current I (Amps)</label><input type="number" id="ol-i" placeholder="solve" step="any" min="0"></div></div>'
-    +'<div class="row"><div class="field"><label>Resistance R (Ohms)</label><input type="number" id="ol-r" placeholder="solve" step="any" min="0"></div>'
-    +'<div class="field"><label>Power P (Watts)</label><input type="number" id="ol-p" placeholder="solve" step="any" min="0"></div></div>'
-    +'<div id="ol-err" class="err"></div><button class="btn" onclick="calcOhms()">Calculate</button><div id="ol-result"></div>'
-    +'<div class="result-box" style="margin-top:1rem"><h3>Formula Reference</h3>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;font-size:12px;color:#aaa;line-height:1.9">'
-    +'<div><strong style="color:#f90">Find E:</strong><br>E = I x R<br>E = P / I<br>E = sqrt(P x R)</div>'
-    +'<div><strong style="color:#f90">Find I:</strong><br>I = E / R<br>I = P / E<br>I = sqrt(P / R)</div>'
-    +'<div><strong style="color:#f90">Find R:</strong><br>R = E / I<br>R = E^2 / P<br>R = P / I^2</div>'
-    +'<div><strong style="color:#f90">Find P:</strong><br>P = E x I<br>P = I^2 x R<br>P = E^2 / R</div>'
-    +'</div></div>';
+  var C=200,r0=32,rA=64,r1=126,r2=192,rf=160;
+  function rad(d){return d*Math.PI/180;}
+  function P(d,r){return [C+r*Math.cos(rad(d)),C+r*Math.sin(rad(d))];}
+  function txt(p,t,sz,fill,wt){return '<text x="'+p[0].toFixed(1)+'" y="'+p[1].toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" font-family="system-ui" font-size="'+sz+'"'+(wt?' font-weight="'+wt+'"':'')+' fill="'+fill+'">'+t+'</text>';}
+  function rln(d,a,b,st,sw){var p1=P(d,a),p2=P(d,b);return '<line x1="'+p1[0].toFixed(1)+'" y1="'+p1[1].toFixed(1)+'" x2="'+p2[0].toFixed(1)+'" y2="'+p2[1].toFixed(1)+'" stroke="'+st+'" stroke-width="'+sw+'"/>';}
+  var col={E:'#ff9f43',I:'#54a0ff',R:'#2ed3b7',P:'#feca57'};
+  var s='<svg viewBox="0 0 400 400" style="position:absolute;inset:0;width:100%;height:100%">';
+  s+='<circle cx="200" cy="200" r="'+r2+'" fill="#1d1d1d" stroke="#4e4e4e" stroke-width="2"/>';
+  s+='<circle cx="200" cy="200" r="'+r1+'" fill="#252525" stroke="#4e4e4e" stroke-width="1.5"/>';
+  s+='<circle cx="200" cy="200" r="'+rA+'" fill="#1f1f1f" stroke="#4e4e4e" stroke-width="1.5"/>';
+  s+='<circle cx="200" cy="200" r="'+r0+'" fill="#141414" stroke="#4e4e4e" stroke-width="1.5"/>';
+  [45,135,225,315].forEach(function(d){s+=rln(d,r0,r2,'#4e4e4e',1.5);});
+  [15,75,105,165,195,255,285,345].forEach(function(d){s+=rln(d,r1,r2,'#383838',1);});
+  // outer ring: 3 formulas per quadrant (the 12 standard Ohm's-law / power formulas)
+  var FM=[[240,'I×R','E'],[270,'P÷I','E'],[300,'√(P×R)','E'],
+          [330,'P÷E','I'],[0,'E÷R','I'],[30,'√(P÷R)','I'],
+          [60,'E÷I','R'],[90,'E²÷P','R'],[120,'P÷I²','R'],
+          [150,'I²×R','P'],[180,'E×I','P'],[210,'E²÷R','P']];
+  FM.forEach(function(f){s+=txt(P(f[0],rf),f[1],12,col[f[2]],'600');});
+  // inner ring: the quantity each quadrant solves for (letter + unit), toward the hub
+  function lab(x,y,L,u,c){return txt([x,y],L,19,c,'800')+txt([x,y+13],u,7.5,'#9a9a9a','700');}
+  s+=lab(200,151,'E','VOLTS',col.E)+lab(247,194,'I','AMPS',col.I)+lab(200,245,'R','OHMS',col.R)+lab(153,194,'P','WATTS',col.P);
+  s+='</svg>';
+  function box(id,l,t){return '<input type="number" step="any" inputmode="decimal" class="ol-in" id="'+id+'" oninput="olInput(this)" placeholder="&#8212;" style="position:absolute;left:'+l+'%;top:'+t+'%;transform:translate(-50%,-50%);width:56px;text-align:center;background:#0e0e0e;border:1.5px solid #5a5a5a;border-radius:6px;color:#fff;font-size:14px;font-weight:700;padding:5px 2px;outline:none;z-index:3">';}
+  var wheel='<div style="position:relative;width:100%;max-width:400px;aspect-ratio:1/1;margin:.25rem auto">'+s
+    +box('ol-v',50,26.25)+box('ol-i',73.75,50)+box('ol-r',50,73.75)+box('ol-p',26.25,50)
+    +'<button type="button" onclick="olClear()" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;width:50px;height:50px;border-radius:50%;background:#222;border:1.5px solid #5a5a5a;color:#bbb;font-size:10px;font-weight:600;cursor:pointer">Clear</button>'
+    +'</div>';
+  return '<style>.ol-in.ol-computed{color:#37d067 !important;border-color:#37d067 !important;background:#10231a !important}</style>'
+    +'<div style="font-size:12px;color:#888;margin-bottom:.5rem;text-align:center">Type any two values into the wheel &#8212; the other two solve automatically.</div>'
+    +wheel
+    +'<div id="ol-err" class="err" style="text-align:center;margin-top:.4rem"></div>'
+    +'<div id="ol-result" style="margin-top:.5rem"></div>';
 }
+var _olUser={'ol-v':false,'ol-i':false,'ol-r':false,'ol-p':false};
+window['init_ohmslaw']=function(){_olUser={'ol-v':false,'ol-i':false,'ol-r':false,'ol-p':false};};
+function olInput(el){_olUser[el.id]=el.value.trim()!=='';el.classList.remove('ol-computed');calcOhms();}
+function olClear(){['ol-v','ol-i','ol-r','ol-p'].forEach(function(id){var e=document.getElementById(id);if(e){e.value='';e.classList.remove('ol-computed');}_olUser[id]=false;});var er=document.getElementById('ol-err');if(er)er.textContent='';var rs=document.getElementById('ol-result');if(rs)rs.innerHTML='';}
+function olFmt(x){if(x==null||!isFinite(x))return '&#8212;';var a=Math.abs(x);if(a!==0&&(a<1e-3||a>=1e6))return x.toPrecision(4);return String(Math.round(x*1e4)/1e4);}
 function calcOhms(){
-  var vEl=document.getElementById('ol-v'),iEl=document.getElementById('ol-i'),rEl=document.getElementById('ol-r'),pEl=document.getElementById('ol-p');
-  var v=vEl.value!==''?+vEl.value:null,i=iEl.value!==''?+iEl.value:null,r=rEl.value!==''?+rEl.value:null,p=pEl.value!==''?+pEl.value:null;
-  var err=document.getElementById('ol-err');err.textContent='';
-  var known=[v,i,r,p].filter(function(x){return x!==null;}).length;
-  if(known<2){err.textContent='Enter at least two values.';return;}
-  if([v,i,r,p].some(function(x){return x!==null&&(isNaN(x)||x<0);})){err.textContent='Values must be zero or positive numbers.';return;}
-  var E=v,I=i,R=r,P=p;
-  if(E!==null&&I!==null){if(R===null)R=E/I;if(P===null)P=E*I;}
-  else if(E!==null&&R!==null){if(I===null)I=E/R;if(P===null)P=E*E/R;}
-  else if(E!==null&&P!==null){if(I===null)I=P/E;if(R===null)R=E*E/P;}
-  else if(I!==null&&R!==null){if(E===null)E=I*R;if(P===null)P=I*I*R;}
-  else if(I!==null&&P!==null){if(E===null)E=P/I;if(R===null)R=P/(I*I);}
-  else if(R!==null&&P!==null){if(E===null)E=Math.sqrt(P*R);if(I===null)I=Math.sqrt(P/R);}
-  if(![E,I,R,P].every(function(x){return isFinite(x);})){err.textContent='These inputs divide by zero - check for a 0 value.';return;}
-  document.getElementById('ol-result').innerHTML=rb(rh('Result')+rr('Voltage (E)',E.toFixed(4)+' V','good')+rr('Current (I)',I.toFixed(4)+' A','good')+rr('Resistance (R)',R.toFixed(4)+' Ohms','good')+rr('Power (P)',P.toFixed(4)+' W / '+(P/1000).toFixed(4)+' kW','good'));
+  var ids=['ol-v','ol-i','ol-r','ol-p'],el={};
+  ids.forEach(function(id){el[id]=document.getElementById(id);});
+  var err=document.getElementById('ol-err');if(err)err.textContent='';
+  // wipe previously-computed (non-user) fields before re-solving
+  ids.forEach(function(id){if(el[id]&&!_olUser[id]){el[id].value='';el[id].classList.remove('ol-computed');}});
+  function gv(id){return (_olUser[id]&&el[id]&&el[id].value.trim()!=='')?+el[id].value:null;}
+  var E=gv('ol-v'),I=gv('ol-i'),R=gv('ol-r'),P=gv('ol-p'),arr=[E,I,R,P];
+  if(arr.some(function(x){return x!=null&&(isNaN(x)||x<0);})){if(err)err.textContent='Values must be zero or positive numbers.';document.getElementById('ol-result').innerHTML='';return;}
+  if(arr.filter(function(x){return x!=null;}).length<2){document.getElementById('ol-result').innerHTML='';return;}
+  var used='';
+  if(E!=null&&I!=null){if(R==null)R=I?E/I:null;if(P==null)P=E*I;used='E and I';}
+  else if(E!=null&&R!=null){if(I==null)I=R?E/R:null;if(P==null)P=R?E*E/R:null;used='E and R';}
+  else if(E!=null&&P!=null){if(I==null)I=E?P/E:null;if(R==null)R=P?E*E/P:null;used='E and P';}
+  else if(I!=null&&R!=null){if(E==null)E=I*R;if(P==null)P=I*I*R;used='I and R';}
+  else if(I!=null&&P!=null){if(E==null)E=I?P/I:null;if(R==null)R=I?P/(I*I):null;used='I and P';}
+  else if(R!=null&&P!=null){if(E==null)E=Math.sqrt(P*R);if(I==null)I=R?Math.sqrt(P/R):null;used='R and P';}
+  var res={'ol-v':E,'ol-i':I,'ol-r':R,'ol-p':P};
+  ids.forEach(function(id){if(el[id]&&!_olUser[id]&&res[id]!=null&&isFinite(res[id])){el[id].value=olFmt(res[id]);el[id].classList.add('ol-computed');}});
+  if([E,I,R,P].some(function(x){return x==null||!isFinite(x);})&&err)err.textContent='A 0 input leaves some values undefined - shown as —.';
+  document.getElementById('ol-result').innerHTML=rb(rh('Result &#8212; solved from '+used)
+    +rr('Voltage (E)',olFmt(E)+' V','good')
+    +rr('Current (I)',olFmt(I)+' A','good')
+    +rr('Resistance (R)',olFmt(R)+' &#937;','good')
+    +rr('Power (P)',olFmt(P)+' W'+(P!=null&&isFinite(P)&&P>=1000?' = '+olFmt(P/1000)+' kW':''),'good'));
 }
 
 /* --- MOTORS --- */
