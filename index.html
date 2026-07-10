@@ -106,6 +106,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--txt);min-
 .chip-good{background:rgba(52,199,89,.13);color:var(--good);border:1px solid rgba(52,199,89,.3)}
 .chip-warn{background:rgba(255,159,10,.13);color:var(--warn);border:1px solid rgba(255,159,10,.3)}
 .chip-bad{background:rgba(255,69,58,.13);color:var(--bad);border:1px solid rgba(255,69,58,.3)}
+.sticky-first th:first-child,.sticky-first td:first-child{position:sticky;left:0;background:#1d1d23;z-index:1}
 @media (max-width:640px){
   #home,#tool-view{padding:1rem}
   .card-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
@@ -143,25 +144,33 @@ window.onerror=function(msg,src,line,col,err){
 };
 /* ===== DATA ===== */
 var AMP_TABLE=[
+  ['18 AWG',null,null,14,null,null,null],['16 AWG',null,null,18,null,null,null],
   ['14 AWG',15,20,25,null,null,null],['12 AWG',20,25,30,15,20,25],
-  ['10 AWG',30,35,40,25,30,35],['8 AWG',40,50,55,30,40,45],
-  ['6 AWG',55,65,75,40,50,60],['4 AWG',70,85,95,55,65,75],
-  ['3 AWG',85,100,110,65,75,85],['2 AWG',95,115,130,75,90,100],
-  ['1 AWG',110,130,150,85,100,115],['1/0 AWG',125,150,170,100,120,135],
+  ['10 AWG',30,35,40,25,30,35],['8 AWG',40,50,55,35,40,45],
+  ['6 AWG',55,65,75,40,50,55],['4 AWG',70,85,95,55,65,75],
+  ['3 AWG',85,100,115,65,75,85],['2 AWG',95,115,130,75,90,100],
+  ['1 AWG',110,130,145,85,100,115],['1/0 AWG',125,150,170,100,120,135],
   ['2/0 AWG',145,175,195,115,135,150],['3/0 AWG',165,200,225,130,155,175],
   ['4/0 AWG',195,230,260,150,180,205],['250 kcmil',215,255,290,170,205,230],
   ['300 kcmil',240,285,320,195,230,260],['350 kcmil',260,310,350,210,250,280],
   ['400 kcmil',280,335,380,225,270,305],['500 kcmil',320,380,430,260,310,350],
-  ['600 kcmil',350,420,475,285,340,385],['750 kcmil',400,475,535,320,385,435],
-  ['1000 kcmil',455,545,615,375,445,500]
+  ['600 kcmil',350,420,475,285,340,385],['700 kcmil',385,460,520,315,375,425],
+  ['750 kcmil',400,475,535,320,385,435],['800 kcmil',410,490,555,330,395,445],
+  ['900 kcmil',435,520,585,355,425,480],['1000 kcmil',455,545,615,375,445,500],
+  ['1250 kcmil',495,590,665,405,485,545],['1500 kcmil',525,625,705,435,520,585],
+  ['1750 kcmil',545,650,735,455,545,615],['2000 kcmil',555,665,750,470,560,630]
 ];
-var WIRE_AREA={'14':0.0097,'12':0.0133,'10':0.0211,'8':0.0366,'6':0.0507,'4':0.0824,'3':0.0973,'2':0.1158,'1':0.1562,'1/0':0.1855,'2/0':0.2223,'3/0':0.2660,'4/0':0.3237,'250':0.3970,'300':0.4608,'350':0.5346,'400':0.6082,'500':0.7542,'600':0.9229,'750':1.1652,'1000':1.5482};
-var WIRE_AREA_XHHW={'14':0.0097,'12':0.0133,'10':0.0211,'8':0.0437,'6':0.0590,'4':0.0814,'3':0.0962,'2':0.1146,'1':0.1534,'1/0':0.1825,'2/0':0.2190,'3/0':0.2624,'4/0':0.3197,'250':0.3904,'300':0.4536,'350':0.5262,'400':0.5993,'500':0.7421,'600':0.9076,'750':1.1442,'1000':1.5220};
-var WIRE_AREA_THW={'14':0.0139,'12':0.0181,'10':0.0243,'8':0.0437,'6':0.0590,'4':0.0814,'3':0.0962,'2':0.1146,'1':0.1534,'1/0':0.1825,'2/0':0.2190,'3/0':0.2624,'4/0':0.3197,'250':0.3904,'300':0.4536,'350':0.5262,'400':0.5993,'500':0.7421,'600':0.9076,'750':1.1442,'1000':1.5220};
-var WIRE_AREA_TW={'14':0.0139,'12':0.0181,'10':0.0243,'8':0.0437,'6':0.0726,'4':0.1018,'3':0.1208,'2':0.1469,'1':0.1963,'1/0':0.2332,'2/0':0.2715,'3/0':0.3107,'4/0':0.3840,'250':0.4877,'300':0.5542,'350':0.6310,'400':0.7088,'500':0.8825};
-var WIRE_AREA_RHH={'14':0.0293,'12':0.0353,'10':0.0437,'8':0.0835,'6':0.1041,'4':0.1333,'3':0.1521,'2':0.1750,'1':0.2660,'1/0':0.3039,'2/0':0.3505,'3/0':0.4072,'4/0':0.4754,'250':0.6291,'300':0.7088,'350':0.7870,'400':0.8659,'500':1.0082,'600':1.2272,'750':1.5220,'1000':1.9635};
-var WIRE_AREA_THHW={'14':0.0097,'12':0.0133,'10':0.0211,'8':0.0437,'6':0.0590,'4':0.0814,'3':0.0962,'2':0.1146,'1':0.1534,'1/0':0.1825,'2/0':0.2190,'3/0':0.2624,'4/0':0.3197,'250':0.3904,'300':0.4536,'350':0.5262,'400':0.5993,'500':0.7421,'600':0.9076,'750':1.1442,'1000':1.5220};
-var WIRE_AREA_MAP={thhn:WIRE_AREA,xhhw:WIRE_AREA_XHHW,thw:WIRE_AREA_THW,tw:WIRE_AREA_TW,rhh:WIRE_AREA_RHH,use2:WIRE_AREA_RHH,thhw:WIRE_AREA_THHW};
+/* NEC Ch.9 Table 5 - approximate area (in2) and diameter (in), from the official table.
+   TW, THW, THHW, THW-2 share one column in Table 5. */
+var WIRE_AREA={'14':0.0097,'12':0.0133,'10':0.0211,'8':0.0366,'6':0.0507,'4':0.0824,'3':0.0973,'2':0.1158,'1':0.1562,'1/0':0.1855,'2/0':0.2223,'3/0':0.2679,'4/0':0.3237,'250':0.3970,'300':0.4608,'350':0.5242,'400':0.5863,'500':0.7073,'600':0.8676,'750':1.0496,'1000':1.3478};
+var WIRE_DIA_THHN={'14':0.111,'12':0.130,'10':0.164,'8':0.216,'6':0.254,'4':0.324,'3':0.352,'2':0.384,'1':0.446,'1/0':0.486,'2/0':0.532,'3/0':0.584,'4/0':0.642,'250':0.711,'300':0.766,'350':0.817,'400':0.864,'500':0.949,'600':1.051,'750':1.156,'1000':1.310};
+var WIRE_AREA_XHHW={'14':0.0139,'12':0.0181,'10':0.0243,'8':0.0437,'6':0.0590,'4':0.0814,'3':0.0962,'2':0.1146,'1':0.1534,'1/0':0.1825,'2/0':0.2190,'3/0':0.2642,'4/0':0.3197,'250':0.3904,'300':0.4536,'350':0.5166,'400':0.5782,'500':0.6984,'600':0.8709,'750':1.0532,'1000':1.3519};
+var WIRE_DIA_XHHW={'14':0.133,'12':0.152,'10':0.176,'8':0.236,'6':0.274,'4':0.322,'3':0.350,'2':0.382,'1':0.442,'1/0':0.482,'2/0':0.528,'3/0':0.580,'4/0':0.638,'250':0.705,'300':0.760,'350':0.811,'400':0.858,'500':0.943,'600':1.053,'750':1.158,'1000':1.312};
+var WIRE_AREA_THW={'14':0.0139,'12':0.0181,'10':0.0243,'8':0.0437,'6':0.0726,'4':0.0973,'3':0.1134,'2':0.1333,'1':0.1901,'1/0':0.2223,'2/0':0.2624,'3/0':0.3117,'4/0':0.3718,'250':0.4596,'300':0.5281,'350':0.5958,'400':0.6619,'500':0.7901,'600':0.9729,'750':1.1652,'1000':1.4784};
+var WIRE_DIA_THW={'14':0.133,'12':0.152,'10':0.176,'8':0.236,'6':0.304,'4':0.352,'3':0.380,'2':0.412,'1':0.492,'1/0':0.532,'2/0':0.578,'3/0':0.630,'4/0':0.688,'250':0.765,'300':0.820,'350':0.871,'400':0.918,'500':1.003,'600':1.113,'750':1.218,'1000':1.372};
+var WIRE_AREA_RHH={'14':0.0293,'12':0.0353,'10':0.0437,'8':0.0835,'6':0.1041,'4':0.1333,'3':0.1521,'2':0.1750,'1':0.2660,'1/0':0.3039,'2/0':0.3505,'3/0':0.4072,'4/0':0.4754,'250':0.6291,'300':0.7088,'350':0.7870,'400':0.8626,'500':1.0082,'600':1.2135,'750':1.4272,'1000':1.7719};
+var WIRE_DIA_RHH={'14':0.193,'12':0.212,'10':0.236,'8':0.326,'6':0.364,'4':0.412,'3':0.440,'2':0.472,'1':0.582,'1/0':0.622,'2/0':0.668,'3/0':0.720,'4/0':0.778,'250':0.895,'300':0.950,'350':1.001,'400':1.048,'500':1.133,'600':1.243,'750':1.348,'1000':1.502};
+var WIRE_AREA_MAP={thhn:WIRE_AREA,thhw:WIRE_AREA_THW,thw:WIRE_AREA_THW,tw:WIRE_AREA_THW,xhhw:WIRE_AREA_XHHW,rhh:WIRE_AREA_RHH,use2:WIRE_AREA_RHH};
 var CONDUIT_TABLE=[
   ['EMT','1/2"',0.304,0.161,0.094,0.122],['EMT','3/4"',0.533,0.283,0.165,0.213],
   ['EMT','1"',0.864,0.458,0.268,0.346],['EMT','1-1/4"',1.496,0.793,0.464,0.598],
@@ -184,10 +193,10 @@ var CONDUIT_TABLE=[
   ['PVC-40','2-1/2"',5.453,2.890,1.690,2.181],['PVC-40','3"',8.688,4.605,2.693,3.475],
   ['PVC-40','3-1/2"',11.258,5.967,3.490,4.503],['PVC-40','4"',14.284,7.571,4.428,5.714]
 ];
-var EGC_TABLE=[[15,14,12],[20,12,10],[60,10,8],[100,8,6],[200,6,4],[300,4,2],[400,3,1],[500,2,'1/0'],[600,1,'2/0'],[800,'1/0','3/0'],[1000,'2/0','4/0'],[1200,'3/0','250'],[1600,'4/0','350'],[2000,'250','400'],[2500,'350','600'],[3000,'400','600'],[4000,'500','800'],[5000,'700','1200'],[6000,'800','1200']];
+var EGC_TABLE=[[15,14,12],[20,12,10],[60,10,8],[100,8,6],[200,6,4],[300,4,2],[400,3,1],[500,2,'1/0'],[600,1,'2/0'],[800,'1/0','3/0'],[1000,'2/0','4/0'],[1200,'3/0','250'],[1600,'4/0','350'],[2000,'250','400'],[2500,'350','600'],[3000,'400','600'],[4000,'500','750'],[5000,'700','1250'],[6000,'800','1250']];
 var DERATING=[[4,6,0.80],[7,9,0.70],[10,20,0.50],[21,30,0.45],[31,40,0.40],[41,999,0.35]];
 var RESIST_CU={'14':3.14,'12':1.98,'10':1.24,'8':0.778,'6':0.491,'4':0.308,'3':0.245,'2':0.194,'1':0.154,'1/0':0.122,'2/0':0.0967,'3/0':0.0766,'4/0':0.0608,'250':0.0515,'300':0.0429,'350':0.0367,'400':0.0321,'500':0.0258,'600':0.0214,'750':0.0171,'1000':0.0129};
-var RESIST_AL={'12':3.26,'10':2.04,'8':1.28,'6':0.808,'4':0.508,'3':0.403,'2':0.319,'1':0.253,'1/0':0.201,'2/0':0.159,'3/0':0.126,'4/0':0.100,'250':0.0847,'300':0.0706,'350':0.0605,'400':0.0529,'500':0.0424,'600':0.0353,'750':0.0282,'1000':0.0212};
+var RESIST_AL={'12':3.25,'10':2.04,'8':1.28,'6':0.808,'4':0.508,'3':0.403,'2':0.319,'1':0.253,'1/0':0.201,'2/0':0.159,'3/0':0.126,'4/0':0.100,'250':0.0847,'300':0.0707,'350':0.0605,'400':0.0529,'500':0.0424,'600':0.0353,'750':0.0282,'1000':0.0212};
 var CU_TO_AL={'14':'12','12':'10','10':'8','8':'6','6':'4','4':'2','3':'1','2':'1/0','1':'2/0','1/0':'3/0','2/0':'4/0','3/0':'250','4/0':'300','250':'400','300':'500','350':'500','400':'600','500':'750','600':'1000','750':'N/A','1000':'N/A'};
 var WIRE_SIZES=['14','12','10','8','6','4','3','2','1','1/0','2/0','3/0','4/0','250','300','350','400','500','600','750','1000'];
 var CONDUIT_TRADE_SIZES=['1/2"','3/4"','1"','1-1/4"','1-1/2"','2"','2-1/2"','3"','3-1/2"','4"','5"','6"'];
@@ -228,7 +237,7 @@ function openTool(id,label){
 function enhanceSteppers(){
   var tv=document.getElementById('tool-view');if(!tv)return;
   tv.querySelectorAll('.field > input[type=number]').forEach(function(inp){
-    if(inp.dataset.stp||inp.classList.contains('ol-in'))return;
+    if(inp.dataset.stp||inp.dataset.nostp!==undefined||inp.classList.contains('ol-in'))return;
     if(inp.closest('.wire-row')||inp.closest('#pb-list')||inp.closest('#mb-rows'))return;
     inp.dataset.stp='1';
     var wrap=document.createElement('div');wrap.className='stp';
@@ -237,17 +246,21 @@ function enhanceSteppers(){
     var up=document.createElement('button');up.type='button';up.className='stp-btn';up.textContent='+';
     wrap.appendChild(dn);wrap.appendChild(inp);wrap.appendChild(up);
     function step(dir){
-      var s=parseFloat(inp.step);if(!isFinite(s)||s<=0)s=1;
+      // buttons move in whole numbers (data-stp-step overrides, e.g. 5 for kW/kVA);
+      // typing still allows decimals
+      var s=parseFloat(inp.dataset.stpStep);
+      if(!isFinite(s)||s<=0)s=1;
+      s=Math.max(1,Math.round(s));
       var v=parseFloat(inp.value);
-      if(!isFinite(v)){v=parseFloat(inp.min);if(!isFinite(v))v=0;}
-      else v=v+dir*s;
+      if(!isFinite(v)){
+        var base=parseFloat(inp.min);if(!isFinite(base))base=0;
+        v=dir>0?Math.max(base,s):base;
+      }
+      else v=dir>0?Math.floor(v)+s:Math.ceil(v)-s;
       var mn=parseFloat(inp.min),mx=parseFloat(inp.max);
       if(isFinite(mn)&&v<mn)v=mn;
       if(isFinite(mx)&&v>mx)v=mx;
-      var dec=(String(s).split('.')[1]||'').length;
-      var out=v.toFixed(dec);
-      if(dec>0)out=out.replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'');
-      inp.value=out;
+      inp.value=String(v);
       inp.dispatchEvent(new Event('input',{bubbles:true}));
       inp.dispatchEvent(new Event('change',{bubbles:true}));
     }
@@ -274,8 +287,9 @@ var TOOLS={
     {id:'t310',icon:'&#128203;',name:'Table 310.16',desc:'Cu & Al ampacity'},
     {id:'tcondfill',icon:'&#128208;',name:'Conduit Dimensions',desc:'NEC Ch.9 Table 4 fill areas'},
     {id:'t250',icon:'&#128297;',name:'Table 250.122',desc:'EGC sizing by OCPD'},
-    {id:'tderating',icon:'&#128201;',name:'Derating Factors',desc:'310.15(B)(3)(a)'},
-    {id:'twire',icon:'&#128207;',name:'Wire Dimensions',desc:'THHN/XHHW area (Ch.9 Table 5)'}
+    {id:'tderating',icon:'&#128201;',name:'Derating Factors',desc:'310.15(C)(1) CCC adjustment'},
+    {id:'twire',icon:'&#128207;',name:'Wire Dimensions',desc:'Ch.9 Table 5 area & diameter'},
+    {id:'tcorr',icon:'&#127777;',name:'Temp Correction',desc:'310.15(B)(1) ambient factors'}
   ],
   formulas:[
     {id:'ohmslaw',icon:'&#9889;',name:"Ohm's Law",desc:'Solve E, I, R, P'},
@@ -304,7 +318,7 @@ function openToolById(id){
   openTool(id,entry?entry.name:id);
 }
 function renderTool(id){
-  var map={vdrop:renderVdrop,cfill:renderCfill,ampacity:renderAmpacity,boxfill:renderBoxfill,power:renderPower,cutoal:renderCutoal,wirecolor:renderWirecolor,conduitbend:renderConduitbend,genfuel:renderGenfuel,boxsize:renderBoxsize,t310:renderT310,tcondfill:renderTCondfill,t250:renderT250,tderating:renderTDerating,twire:renderTWire,ohmslaw:renderOhmslaw,motors:renderMotors,xfmr:renderXfmr,pfcorr:renderPfcorr,reactance:renderReactance,lighting:renderLighting,dwelload:renderDwelload,convtable:renderConvtable};
+  var map={vdrop:renderVdrop,cfill:renderCfill,ampacity:renderAmpacity,boxfill:renderBoxfill,power:renderPower,cutoal:renderCutoal,wirecolor:renderWirecolor,conduitbend:renderConduitbend,genfuel:renderGenfuel,boxsize:renderBoxsize,t310:renderT310,tcondfill:renderTCondfill,t250:renderT250,tderating:renderTDerating,twire:renderTWire,tcorr:renderTcorr,ohmslaw:renderOhmslaw,motors:renderMotors,xfmr:renderXfmr,pfcorr:renderPfcorr,reactance:renderReactance,lighting:renderLighting,dwelload:renderDwelload,convtable:renderConvtable};
   return map[id]?map[id]():'<p style="color:#888">Coming soon.</p>';
 }
 
@@ -344,6 +358,8 @@ function calcVdrop(){
   var mode=document.getElementById('vd-mode').value,phase=parseInt(document.getElementById('vd-phase').value),cond=document.getElementById('vd-cond').value,volt=parseFloat(document.getElementById('vd-volt').value),len=parseFloat(document.getElementById('vd-len').value),amps=parseFloat(document.getElementById('vd-amps').value),par=parseInt(document.getElementById('vd-par').value);
   var RT=cond==='cu'?RESIST_CU:RESIST_AL,pm=phase===3?Math.sqrt(3):2,err=document.getElementById('vd-err');err.textContent='';
   if(!(len>0)||!(amps>0)){err.textContent='Enter a valid length and load current.';return;}
+  var VD_SMALL=['14','12','10','8','6','4','3','2','1'];
+  if(par>1&&mode!=='minsize'&&VD_SMALL.indexOf(document.getElementById('vd-size').value)>=0){err.textContent='NEC 310.10(G): only 1/0 AWG and larger conductors may be installed in parallel.';return;}
   if(mode==='vd'){
     var sz=document.getElementById('vd-size').value,R=RT[sz];if(!R){err.textContent='No resistance data.';return;}
     var vdV=(amps*(R/1000)*len*pm)/par,vdP=(vdV/volt)*100,cls=vdP<=3?'good':vdP<=5?'warn':'bad';
@@ -353,7 +369,7 @@ function calcVdrop(){
       +rr('Voltage Drop',vdV.toFixed(2)+' V','')+rr('Receiving Voltage',(volt-vdV).toFixed(1)+' V',(volt-vdV)<=0?'bad':''));
   } else if(mode==='minsize'){
     var maxvd=parseFloat(document.getElementById('vd-maxvd').value)/100,maxVdV=volt*maxvd,maxR=(maxVdV*par)/(amps*(len/1000)*pm);
-    var found=WIRE_SIZES.find(function(s){return RT[s]&&RT[s]<=maxR;});
+    var found=WIRE_SIZES.find(function(s){if(par>1&&VD_SMALL.indexOf(s)>=0)return false;return RT[s]&&RT[s]<=maxR;});
     if(!found){document.getElementById('vd-result').innerHTML='<div class="err">No standard size meets this requirement.</div>';return;}
     var vdV2=(amps*(RT[found]/1000)*len*pm)/par;
     document.getElementById('vd-result').innerHTML=rb(rh('Result')+rr('Minimum Wire Size',found+' AWG/kcmil','good')+rr('Actual VD',((vdV2/volt)*100).toFixed(2)+'% / '+vdV2.toFixed(2)+' V',''));
@@ -385,7 +401,7 @@ function renderCfill(){
     +'<div id="cfm-err" class="err"></div><button class="btn" onclick="calcCfMin()">Find Minimum Size</button><div id="cfm-result"></div></div>';
 }
 window.cfModeSwitch=function(mode,btn){document.querySelectorAll('#cf-mode-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('cf-fill-mode').style.display=mode==='fill'?'block':'none';document.getElementById('cf-minsize-mode').style.display=mode==='minsize'?'block':'none';};
-function insOpts(){return '<option value="thhn">THHN/THWN-2</option><option value="thhw">THHW</option><option value="xhhw">XHHW/XHHW-2</option><option value="thw">THW/THW-2</option><option value="tw">TW</option><option value="rhh">RHH/RHW (no cover)</option><option value="use2">USE-2/RHW-2 (cover)</option>';}
+function insOpts(){return '<option value="thhn">THHN/THWN-2</option><option value="xhhw">XHHW/XHHW-2</option><option value="thw">TW/THW/THHW/THW-2</option><option value="rhh">RHH/RHW/RHW-2</option>';}
 function wSzOpts(){return WIRE_SIZES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');}
 window.init_cfill=function(){cfillWires=[];cfmWires=[];updateCfSizes();addCfWire();addCfmWire();};
 function updateCfSizes(){var t=document.getElementById('cf-type').value,sz=[];CONDUIT_TABLE.forEach(function(r){if(r[0]===t&&sz.indexOf(r[1])<0)sz.push(r[1]);});document.getElementById('cf-size').innerHTML=sz.map(function(s){return '<option>'+s+'</option>';}).join('');}
@@ -424,14 +440,14 @@ function calcCfMin(){
 
 /* ===== 3. AMPACITY ===== */
 function renderAmpacity(){
-  var szOpts=WIRE_SIZES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+  var szOpts=AMP_TABLE.map(function(r){var s=r[0].replace(' AWG','').replace(' kcmil','');return '<option value="'+s+'"'+(s==='12'?' selected':'')+'>'+r[0]+'</option>';}).join('');
   return '<div class="row"><div class="field"><label>Wire Size</label><select id="amp-size">'+szOpts+'</select></div>'
     +'<div class="field"><label>Conductor</label><select id="amp-cond"><option value="cu">Copper</option><option value="al">Aluminum</option></select></div></div>'
     +'<div class="row"><div class="field"><label>Temp Rating</label><select id="amp-temp"><option value="60">60C</option><option value="75" selected>75C</option><option value="90">90C</option></select></div>'
     +'<div class="field"><label>Ambient Temp (C)</label><input type="number" id="amp-amb" value="30" min="0" max="90"></div></div>'
     +'<div class="field"><label>Current-Carrying Conductors in Conduit</label><input type="number" id="amp-cccs" value="3" min="1" max="99"></div>'
     +'<button class="btn" onclick="calcAmpacity()">Calculate</button><div id="amp-result"></div>'
-    +'<div class="result-note">Base ampacity from NEC Table 310.16. Ambient correction per 310.15(B)(2). Fill derating per 310.15(B)(3)(a). Both factors applied simultaneously.</div>';
+    +'<div class="result-note">Base ampacity from NEC Table 310.16. Ambient correction per Table 310.15(B)(1)(1); more-than-3-CCC adjustment per Table 310.15(C)(1) (2023 numbering). Both factors applied together.</div>';
 }
 function calcAmpacity(){
   var sz=document.getElementById('amp-size').value,cond=document.getElementById('amp-cond').value,tr=parseInt(document.getElementById('amp-temp').value),amb=parseFloat(document.getElementById('amp-amb').value),cccs=parseInt(document.getElementById('amp-cccs').value);
@@ -452,12 +468,24 @@ function calcAmpacity(){
 }
 
 /* ===== 4. BOX FILL ===== */
+/* NEC Table 314.16(A) - standard metal boxes, ascending by volume (in3) */
+var BOX_SIZES=[
+  ['3 x 2 x 1-1/2 device',7.5],['3 x 2 x 2 device',10.0],['4 x 2-1/8 x 1-1/2 device',10.3],
+  ['3 x 2 x 2-1/4 device',10.5],['3 x 2 x 2-1/2 device',12.5],['4 x 1-1/4 round/octagon',12.5],
+  ['4 x 2-1/8 x 1-7/8 device',13.0],['FS single cover (1-3/4 deep)',13.5],['3 x 2 x 2-3/4 device',14.0],
+  ['3-3/4 x 2 x 2-1/2 masonry',14.0],['4 x 2-1/8 x 2-1/8 device',14.5],['4 x 1-1/2 round/octagon',15.5],
+  ['4 x 1-1/4 square',18.0],['3 x 2 x 3-1/2 device',18.0],['FD single cover (2-3/8 deep)',18.0],
+  ['FS multiple cover (1-3/4 deep)',18.0],['4 x 1-1/2 square',21.0],['3-3/4 x 2 x 3-1/2 masonry',21.0],
+  ['4 x 2-1/8 round/octagon',21.5],['FD multiple cover (2-3/8 deep)',24.0],['4-11/16 x 1-1/4 square',25.5],
+  ['4-11/16 x 1-1/2 square',29.5],['4 x 2-1/8 square',30.3],['4-11/16 x 2-1/8 square',42.0]
+];
 function renderBoxfill(){
   return '<div class="result-note" style="margin-bottom:1rem">NEC 314.16(B): Each conductor volume based on largest conductor entering box. EGCs (2020+): one volume for all, plus 1/4 volume for each EGC over four.</div>'
     +'<div class="field"><label>Largest Wire Size</label><select id="bf-sz"><option value="1.50">18 AWG (1.50 in3)</option><option value="1.75">16 AWG (1.75 in3)</option><option value="2.00">14 AWG (2.00 in3)</option><option value="2.25" selected>12 AWG (2.25 in3)</option><option value="2.50">10 AWG (2.50 in3)</option><option value="3.00">8 AWG (3.00 in3)</option><option value="5.00">6 AWG (5.00 in3)</option></select></div>'
     +'<div class="row3"><div class="field"><label>Conductors In</label><input type="number" id="bf-cin" value="2" min="0"></div><div class="field"><label>Conductors Out</label><input type="number" id="bf-cout" value="2" min="0"></div><div class="field"><label>Pass-Through</label><input type="number" id="bf-cpt" value="0" min="0"></div></div>'
     +'<div class="row3"><div class="field"><label>Devices</label><input type="number" id="bf-dev" value="1" min="0"></div><div class="field"><label>Cable Clamps</label><input type="number" id="bf-clamp" value="1" min="0"></div><div class="field"><label>Support Fittings</label><input type="number" id="bf-stud" value="0" min="0"></div></div>'
     +'<div class="field"><label>EGCs (1 volume; +1/4 each over 4)</label><input type="number" id="bf-egc" value="1" min="0"></div>'
+    +'<div class="field"><label>Check a Specific Box (optional)</label><select id="bf-box"><option value="">Auto-recommend smallest standard box</option>'+BOX_SIZES.map(function(b){return '<option value="'+b[1]+'|'+b[0]+'">'+b[0]+' - '+b[1].toFixed(1)+' in3</option>';}).join('')+'</select></div>'
     +'<button class="btn" onclick="calcBoxFill()">Calculate</button><div id="bf-result"></div>'
     +'<div class="result-note" style="margin-top:1rem">NEC Table 314.16(B)(1) lists volume allowances only for 18 AWG through 6 AWG - that is the full range for device/outlet box fill. Conductors 4 AWG and larger use junction / pull box sizing instead (NEC 314.28 - see the Pull Box Sizing tool).</div>';
 }
@@ -465,51 +493,62 @@ function calcBoxFill(){
   function bfn(id){return Math.max(0,parseInt(document.getElementById(id).value)||0);}
   var vol=parseFloat(document.getElementById('bf-sz').value),cin=bfn('bf-cin'),cout=bfn('bf-cout'),cpt=bfn('bf-cpt'),dev=bfn('bf-dev'),clamp=bfn('bf-clamp'),stud=bfn('bf-stud'),egc=bfn('bf-egc');
   var condVol=(cin+cout+cpt)*vol,devVol=dev*2*vol,clampVol=clamp>0?vol:0,studVol=stud*vol,egcVol=egc>0?vol*(1+Math.max(0,egc-4)*0.25):0,total=condVol+devVol+clampVol+studVol+egcVol;
+  var bsel=document.getElementById('bf-box').value,recHtml='';
+  if(bsel){
+    var bp=bsel.split('|'),bv=parseFloat(bp[0]),bok=bv>=total-0.001;
+    recHtml=rr('Selected Box (314.16(A))',bp[1]+' - '+bv.toFixed(1)+' in3',bok?'good':'bad')
+      +hchip(bok?'good':'bad',bok?'Box OK - '+(bv-total).toFixed(2)+' in3 to spare':'Too small - short '+(total-bv).toFixed(2)+' in3');
+  }else{
+    var fits=BOX_SIZES.filter(function(b){return b[1]>=total-0.001;});
+    recHtml=fits.length
+      ?rr('Smallest Standard Box (314.16(A))',fits[0][0]+' - '+fits[0][1].toFixed(1)+' in3','good')
+        +(fits[1]&&fits[1][1]!==fits[0][1]?rr('Next Size Up',fits[1][0]+' - '+fits[1][1].toFixed(1)+' in3',''):'')
+      :'<div class="err" style="margin-top:.5rem">No single standard metal box fits - gang device boxes or use a larger enclosure.</div>';
+  }
   document.getElementById('bf-result').innerHTML=rb(rh('Box Fill')
     +heroNum(total.toFixed(2),'in&sup3;','Minimum box volume required',hchip('good','Sized per NEC 314.16(B)'))
-    +rr('Conductors ('+(cin+cout+cpt)+'x'+vol+')',condVol.toFixed(2)+' in3','')+rr('Devices ('+dev+'x2x'+vol+')',devVol.toFixed(2)+' in3','')+rr('Clamps / Studs / EGC',(clampVol+studVol+egcVol).toFixed(2)+' in3',''))
-    +rn('Common: single-gang=18-21 in3 | 4x4 square=21-30 in3 | 4x4 deep=42 in3');
+    +rr('Conductors ('+(cin+cout+cpt)+'x'+vol+')',condVol.toFixed(2)+' in3','')+rr('Devices ('+dev+'x2x'+vol+')',devVol.toFixed(2)+' in3','')+rr('Clamps / Studs / EGC',(clampVol+studVol+egcVol).toFixed(2)+' in3','')
+    +recHtml);
 }
 
 /* ===== 5. POWER / CURRENT ===== */
 function renderPower(){
-  return '<div class="field"><label>Phase</label><select id="pw-phase"><option value="1">Single Phase (1ph)</option><option value="3" selected>Three Phase (3ph)</option></select></div>'
-    +'<div class="row"><div class="field"><label>Voltage (V)</label><select id="pw-volt"><option>120</option><option>208</option><option>240</option><option selected>277</option><option>480</option><option>600</option></select></div>'
-    +'<div class="field"><label>Power Factor</label><input type="number" id="pw-pf" value="0.85" min="0.01" max="1.0" step="0.01"></div></div>'
-    +'<div style="font-size:12px;color:#888;margin-bottom:.75rem">Enter any TWO values below, leave one blank to solve for it.</div>'
-    +'<div class="row3"><div class="field"><label>kVA</label><input type="number" id="pw-kva" placeholder="solve" step="0.01" min="0"></div>'
-    +'<div class="field"><label>kW</label><input type="number" id="pw-kw" placeholder="solve" step="0.01" min="0"></div>'
-    +'<div class="field"><label>Amps</label><input type="number" id="pw-amps" placeholder="solve" step="0.01" min="0"></div></div>'
-    +'<div id="pw-err" class="err"></div><button class="btn" onclick="calcPower()">Calculate</button><div id="pw-result"></div>'
-    +'<div class="result-note">1ph: kVA = V x A / 1000 | 3ph: kVA = 1.732 x V x A / 1000 | kW = kVA x PF</div>';
+  return '<div class="row"><div class="field"><label>Phase</label><select id="pw-phase" onchange="calcPower()"><option value="1">Single Phase (1ph)</option><option value="3" selected>Three Phase (3ph)</option></select></div>'
+    +'<div class="field"><label>Voltage (V)</label><select id="pw-volt" onchange="calcPower()"><option>120</option><option>208</option><option>240</option><option>277</option><option selected>480</option><option>600</option></select></div></div>'
+    +'<div class="row"><div class="field"><label>Load</label><input type="number" id="pw-load" placeholder="Enter your load" step="0.01" min="0" data-stp-step="5" oninput="calcPower()"></div>'
+    +'<div class="field"><label>Load Unit</label><select id="pw-unit" onchange="pwUnit()"><option value="kw" selected>kW (real power)</option><option value="kva">kVA (apparent)</option><option value="a">Amps</option></select></div></div>'
+    +'<div class="field"><label>Power Factor (0-1)</label><input type="number" id="pw-pf" value="0.85" min="0.01" max="1" step="0.01" data-nostp oninput="calcPower()"></div>'
+    +'<div id="pw-err" class="err"></div><div id="pw-result"></div>'
+    +'<div class="result-note">Enter the one number you have - kW, kVA, or amps - and the rest solve live from voltage, phase, and PF. 1ph: kVA = V x A / 1000 | 3ph: kVA = 1.732 x V x A / 1000 | kW = kVA x PF.</div>';
 }
+window.pwUnit=function(){
+  var u=document.getElementById('pw-unit').value;
+  document.getElementById('pw-load').dataset.stpStep=u==='a'?'1':'5';
+  calcPower();
+};
 function calcPower(){
-  var phase=parseInt(document.getElementById('pw-phase').value),volt=parseFloat(document.getElementById('pw-volt').value),pf=parseFloat(document.getElementById('pw-pf').value);
-  var kva=document.getElementById('pw-kva').value!==''?parseFloat(document.getElementById('pw-kva').value):null;
-  var kw=document.getElementById('pw-kw').value!==''?parseFloat(document.getElementById('pw-kw').value):null;
-  var amps=document.getElementById('pw-amps').value!==''?parseFloat(document.getElementById('pw-amps').value):null;
-  var err=document.getElementById('pw-err');err.textContent='';
-  if(pf<=0||pf>1){err.textContent='PF must be 0.01 to 1.0';return;}
-  if([kva,kw,amps].some(function(v){return v!==null&&!(v>=0);})){err.textContent='Values must be positive numbers.';return;}
-  var known=[kva,kw,amps].filter(function(v){return v!==null;}).length;
-  if(known<2){err.textContent='Enter at least two values.';return;}
-  var mult=phase===3?Math.sqrt(3):1;
-  // Solve: kVA = mult*V*A/1000 | kW = kVA*PF | A = kVA*1000/(mult*V)
-  if(kva!==null&&kw!==null){
-    if(kw>kva+1e-9){err.textContent='kW cannot exceed kVA - check inputs.';return;}
-    if(kva>0)pf=kw/kva;
-    amps=(kva*1000)/(mult*volt);
-  } else if(kva!==null&&amps!==null){
-    kw=kva*pf;
-  } else {
-    kva=(mult*volt*amps)/1000;
-    if(kw>kva+1e-9){err.textContent='Entered kW exceeds the kVA implied by voltage and amps (PF would be over 1.0).';return;}
-    if(kva>0)pf=kw/kva;
-  }
+  var err=document.getElementById('pw-err'),res=document.getElementById('pw-result');
+  err.textContent='';
+  var raw=document.getElementById('pw-load').value;
+  if(raw.trim()===''){res.innerHTML='';return;}
+  var L=parseFloat(raw),pf=parseFloat(document.getElementById('pw-pf').value);
+  var volt=parseFloat(document.getElementById('pw-volt').value),mult=document.getElementById('pw-phase').value==='3'?Math.sqrt(3):1;
+  if(!(L>0)){err.textContent='Load must be greater than 0.';res.innerHTML='';return;}
+  if(!(pf>0&&pf<=1)){err.textContent='PF must be between 0.01 and 1.0.';res.innerHTML='';return;}
+  var u=document.getElementById('pw-unit').value,kva,kw,amps;
+  if(u==='kw'){kw=L;kva=kw/pf;amps=kva*1000/(mult*volt);}
+  else if(u==='kva'){kva=L;kw=kva*pf;amps=kva*1000/(mult*volt);}
+  else{amps=L;kva=mult*volt*amps/1000;kw=kva*pf;}
   var kvar=Math.sqrt(Math.max(0,kva*kva-kw*kw));
-  document.getElementById('pw-result').innerHTML=rb(rh('Result')
-    +heroNum(amps.toFixed(2),'A','Line current at '+volt+' V '+(mult>1?'three-phase':'single-phase')+' &middot; PF '+pf.toFixed(3),null)
-    +rr('Apparent Power',kva.toFixed(3)+' kVA','')+rr('Real Power',kw.toFixed(3)+' kW','')+rr('Reactive Power',kvar.toFixed(3)+' kVAR','')+rr('Power Factor',pf.toFixed(3)+' ('+(pf*100).toFixed(1)+'%)',''));
+  var heroVal=u==='a'?kva.toFixed(2):amps.toFixed(2);
+  var heroUnit=u==='a'?'kVA':'A';
+  var heroSub=(u==='a'?'Apparent power at ':'Line current at ')+volt+' V '+(mult>1?'three-phase':'single-phase')+' &middot; PF '+pf.toFixed(2);
+  res.innerHTML=rb(rh('Result')
+    +heroNum(heroVal,heroUnit,heroSub,null)
+    +rr('Current',amps.toFixed(2)+' A',u==='a'?'':'good')
+    +rr('Apparent Power',kva.toFixed(2)+' kVA',u==='a'?'good':'')
+    +rr('Real Power',kw.toFixed(2)+' kW','')
+    +rr('Reactive Power',kvar.toFixed(2)+' kVAR',''));
 }
 
 /* ===== 6. CU TO AL ===== */
@@ -1951,15 +1990,52 @@ window['init_t250']=function(){tblInit(document.getElementById('tbl-250'));};
 
 function renderTDerating(){
   var rows=DERATING.map(function(r){return '<tr><td>'+r[0]+(r[1]===999?'+':r[0]===r[1]?'':' - '+r[1])+'</td><td>'+(r[2]*100).toFixed(0)+'%</td></tr>';}).join('');
-  return '<div style="font-size:12px;color:#888;margin-bottom:.75rem">NEC 310.15(B)(3)(a) - Adjustment factors for more than 3 CCCs. Click rows/columns to highlight.</div><table class="ref-table" id="tbl-der"><thead><tr><th>Number of CCCs</th><th>% of Base Ampacity</th></tr></thead><tbody>'+rows+'</tbody></table><div class="result-note" style="margin-top:.75rem">Neutrals on 4-wire systems carrying only 3rd harmonic imbalance count as CCCs.</div>';
+  return '<div style="font-size:12px;color:#888;margin-bottom:.75rem">NEC Table 310.15(C)(1) (2023; formerly 310.15(B)(3)(a)) - Adjustment factors for more than 3 CCCs. Click rows/columns to highlight.</div><table class="ref-table" id="tbl-der"><thead><tr><th>Number of CCCs</th><th>% of Base Ampacity</th></tr></thead><tbody>'+rows+'</tbody></table><div class="result-note" style="margin-top:.75rem">Neutrals on 4-wire systems carrying only 3rd harmonic imbalance count as CCCs.</div>';
 }
 window['init_tderating']=function(){tblInit(document.getElementById('tbl-der'));};
 
+var _twUnit='in',_twMode='area';
 function renderTWire(){
-  var rows=WIRE_SIZES.map(function(sz){return '<tr><td><strong>'+sz+'</strong></td><td>'+(WIRE_AREA[sz]?WIRE_AREA[sz].toFixed(4):'--')+'</td><td>'+(WIRE_AREA_XHHW[sz]?WIRE_AREA_XHHW[sz].toFixed(4):'--')+'</td><td>'+(WIRE_AREA_THW[sz]?WIRE_AREA_THW[sz].toFixed(4):'--')+'</td><td>'+(WIRE_AREA_TW[sz]?WIRE_AREA_TW[sz].toFixed(4):'--')+'</td><td>'+(WIRE_AREA_RHH[sz]?WIRE_AREA_RHH[sz].toFixed(4):'--')+'</td></tr>';}).join('');
-  return '<div style="font-size:12px;color:#888;margin-bottom:.75rem">NEC Ch.9 Table 5 - Wire areas (in2). Click rows/columns to highlight.</div><div style="overflow-x:auto"><table class="ref-table" id="tbl-wire"><thead><tr><th>Size</th><th>THHN/THWN-2</th><th>XHHW/XHHW-2</th><th>THW/THW-2</th><th>TW</th><th>RHH/RHW-2</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="result-note">THHW matches THHN for 14-10 AWG, THW for 8 AWG and larger.</div>';
+  return '<div class="tab-row">'
+    +'<button class="tab-btn'+(_twMode==='area'?' active':'')+'" onclick="_twMode=\'area\';openToolById(\'twire\')">Area</button>'
+    +'<button class="tab-btn'+(_twMode==='dia'?' active':'')+'" onclick="_twMode=\'dia\';openToolById(\'twire\')">Diameter</button>'
+    +'<span style="width:14px"></span>'
+    +'<button class="tab-btn'+(_twUnit==='in'?' active':'')+'" onclick="_twUnit=\'in\';openToolById(\'twire\')">inches</button>'
+    +'<button class="tab-btn'+(_twUnit==='mm'?' active':'')+'" onclick="_twUnit=\'mm\';openToolById(\'twire\')">mm</button></div>'
+    +'<div id="tw-tbl"></div>'
+    +rn('NEC Ch.9 Table 5 approximate dimensions, verified against the official table. TW, THW, THHW, and THW-2 share one column in Table 5. mm values converted (1 in = 25.4 mm; 1 in&sup2; = 645.16 mm&sup2;). Click rows/columns to highlight.');
 }
-window['init_twire']=function(){tblInit(document.getElementById('tbl-wire'));};
+function twDraw(){
+  var isA=_twMode==='area',isIn=_twUnit==='in';
+  function f(map,sz){var v=map[sz];if(v==null)return '--';if(isA)return isIn?v.toFixed(4):(v*645.16).toFixed(1);return isIn?v.toFixed(3):(v*25.4).toFixed(2);}
+  var M={thhn:isA?WIRE_AREA:WIRE_DIA_THHN,xhhw:isA?WIRE_AREA_XHHW:WIRE_DIA_XHHW,thw:isA?WIRE_AREA_THW:WIRE_DIA_THW,rhh:isA?WIRE_AREA_RHH:WIRE_DIA_RHH};
+  var unit=isA?(isIn?'in&sup2;':'mm&sup2;'):(isIn?'in':'mm');
+  var rows=WIRE_SIZES.map(function(sz){return '<tr><th>'+sz+'</th><td>'+f(M.thhn,sz)+'</td><td>'+f(M.xhhw,sz)+'</td><td>'+f(M.thw,sz)+'</td><td>'+f(M.rhh,sz)+'</td></tr>';}).join('');
+  document.getElementById('tw-tbl').innerHTML='<div style="font-size:12px;color:#888;margin-bottom:.5rem">Approximate '+(isA?'area':'diameter')+' in '+unit+'</div><div style="overflow-x:auto"><table class="ref-table sticky-first" id="tbl-wire"><thead><tr><th>Size</th><th>THHN/THWN-2</th><th>XHHW/XHHW-2</th><th>TW/THW/THHW</th><th>RHH/RHW/RHW-2</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  tblInit(document.getElementById('tbl-wire'));
+}
+window['init_twire']=function(){twDraw();};
+
+/* Ambient temperature correction factors - 2023 Tables 310.15(B)(1)(1) and 310.15(B)(1)(2) */
+var _tcBase=30;
+function renderTcorr(){
+  return '<div class="tab-row">'
+    +'<button class="tab-btn'+(_tcBase===30?' active':'')+'" onclick="_tcBase=30;openToolById(\'tcorr\')">310.15(B)(1)(1) - 30&deg;C basis</button>'
+    +'<button class="tab-btn'+(_tcBase===40?' active':'')+'" onclick="_tcBase=40;openToolById(\'tcorr\')">310.15(B)(1)(2) - 40&deg;C basis</button></div>'
+    +'<div style="overflow-x:auto"><table class="ref-table" id="tbl-tcorr"><thead><tr><th>Ambient &deg;C</th><th>60&deg;C wire</th><th>75&deg;C wire</th><th>90&deg;C wire</th></tr></thead><tbody>'+tcRows()+'</tbody></table></div>'
+    +rn('Correction factor = &radic;((Tc &minus; Ta) / (Tc &minus; '+_tcBase+')) where Tc = conductor temperature rating and Ta = ambient. Multiply the table ampacity by the factor. Use the 30&deg;C table with Table 310.16; use the 40&deg;C table with ampacity tables based on 40&deg;C ambient (e.g., Table 310.17 free air). 2023 NEC numbering (formerly 310.15(B)(2)(a)/(b)). Click rows/columns to highlight.');
+}
+function tcRows(){
+  var bands=[[10,'10 or less'],[15,'11-15'],[20,'16-20'],[25,'21-25'],[30,'26-30'],[35,'31-35'],[40,'36-40'],[45,'41-45'],[50,'46-50'],[55,'51-55'],[60,'56-60'],[65,'61-65'],[70,'66-70'],[75,'71-75'],[80,'76-80'],[85,'81-85']];
+  return bands.map(function(b){
+    var cells=[60,75,90].map(function(tc){
+      var f=(tc-b[0])/(tc-_tcBase);
+      return '<td>'+(f>0?Math.sqrt(f).toFixed(2):'--')+'</td>';
+    }).join('');
+    return '<tr><th>'+b[1]+'</th>'+cells+'</tr>';
+  }).join('');
+}
+window['init_tcorr']=function(){tblInit(document.getElementById('tbl-tcorr'));};
 
 /* ===== CALCULATIONS & CONVERSIONS ===== */
 
@@ -2095,7 +2171,7 @@ function renderXfmr(){
     +'<button class="tab-btn" onclick="xfTab(\'ref\',this)">Reference</button></div>'
     +'<div id="xf-size"><div class="row"><div class="field"><label>Phase</label><select id="xf-phase"><option value="1">Single Phase</option><option value="3" selected>Three Phase</option></select></div>'
     +'<div class="field"><label>Load (kW)</label><input type="number" id="xf-kw" value="100" min="0" step="1"></div></div>'
-    +'<div class="row"><div class="field"><label>Power Factor</label><input type="number" id="xf-pf" value="0.85" min="0.1" max="1" step="0.01"></div>'
+    +'<div class="row"><div class="field"><label>Power Factor</label><input type="number" id="xf-pf" value="0.85" min="0.1" max="1" step="0.01" data-nostp></div>'
     +'<div class="field"><label>Demand Factor %</label><input type="number" id="xf-df" value="100" min="10" max="100" step="5"></div></div>'
     +'<button class="btn" onclick="calcXfSize()">Calculate</button><div id="xf-size-result"></div></div>'
     +'<div id="xf-ratio" style="display:none"><div class="row"><div class="field"><label>Phase</label><select id="xf-rph"><option value="1">Single Phase</option><option value="3" selected>Three Phase</option></select></div>'
@@ -2122,8 +2198,8 @@ function calcXfRatio(){var ph=+document.getElementById('xf-rph').value,vp=+docum
 function renderPfcorr(){
   return '<div class="result-note" style="margin-bottom:.75rem">Size a capacitor bank to correct power factor.</div>'
     +'<div class="row"><div class="field"><label>System kW</label><input type="number" id="pfc-kw" value="100" min="0.1" step="1"></div>'
-    +'<div class="field"><label>Existing PF</label><input type="number" id="pfc-pf1" value="0.75" min="0.01" max="0.999" step="0.01"></div></div>'
-    +'<div class="row"><div class="field"><label>Target PF</label><input type="number" id="pfc-pf2" value="0.95" min="0.01" max="1.0" step="0.01"></div>'
+    +'<div class="field"><label>Existing PF</label><input type="number" id="pfc-pf1" value="0.75" min="0.01" max="0.999" step="0.01" data-nostp></div></div>'
+    +'<div class="row"><div class="field"><label>Target PF</label><input type="number" id="pfc-pf2" value="0.95" min="0.01" max="1.0" step="0.01" data-nostp></div>'
     +'<div class="field"><label>Voltage (V)</label><select id="pfc-volt"><option>120</option><option>208</option><option>240</option><option>277</option><option selected>480</option><option>600</option></select></div></div>'
     +'<div class="field"><label>Phase</label><select id="pfc-phase"><option value="1">Single Phase</option><option value="3" selected>Three Phase</option></select></div>'
     +'<div id="pfc-err" class="err"></div><button class="btn" onclick="calcPfc()">Calculate</button><div id="pfc-result"></div>'
@@ -2176,16 +2252,16 @@ function renderLighting(){
     +'<div class="field"><label>Ceiling Ht (ft)</label><input type="number" id="lt-ch" value="10" min="1"></div></div>'
     +'<div class="row3"><div class="field"><label>Lumens/Fixture</label><input type="number" id="lt-lm" value="5000" min="1"></div>'
     +'<div class="field"><label>Fixtures</label><input type="number" id="lt-fix" value="12" min="1"></div>'
-    +'<div class="field"><label>CU</label><input type="number" id="lt-cu" value="0.65" min="0.1" max="1" step="0.01"></div></div>'
-    +'<div class="field"><label>LLF</label><input type="number" id="lt-llf" value="0.80" min="0.5" max="1" step="0.01"></div>'
+    +'<div class="field"><label>CU</label><input type="number" id="lt-cu" value="0.65" min="0.1" max="1" step="0.01" data-nostp></div></div>'
+    +'<div class="field"><label>LLF</label><input type="number" id="lt-llf" value="0.80" min="0.5" max="1" step="0.01" data-nostp></div>'
     +'<button class="btn" onclick="calcFC()">Calculate</button><div id="lt-fc-result"></div>'
     +'<div class="result-note">CU (Coefficient of Utilization): office 0.60-0.70, warehouse 0.55-0.65. LLF: clean 0.80, dirty 0.65-0.70.</div></div>'
     +'<div id="lt-lamp" style="display:none"><div class="row3"><div class="field"><label>Length (ft)</label><input type="number" id="lt2-len" value="40" min="1"></div>'
     +'<div class="field"><label>Width (ft)</label><input type="number" id="lt2-wid" value="30" min="1"></div>'
     +'<div class="field"><label>Target fc</label><input type="number" id="lt2-fc" value="50" min="1"></div></div>'
     +'<div class="row3"><div class="field"><label>Lumens/Fixture</label><input type="number" id="lt2-lm" value="5000" min="1"></div>'
-    +'<div class="field"><label>CU</label><input type="number" id="lt2-cu" value="0.65" min="0.1" max="1" step="0.01"></div>'
-    +'<div class="field"><label>LLF</label><input type="number" id="lt2-llf" value="0.80" min="0.5" max="1" step="0.01"></div></div>'
+    +'<div class="field"><label>CU</label><input type="number" id="lt2-cu" value="0.65" min="0.1" max="1" step="0.01" data-nostp></div>'
+    +'<div class="field"><label>LLF</label><input type="number" id="lt2-llf" value="0.80" min="0.5" max="1" step="0.01" data-nostp></div></div>'
     +'<button class="btn" onclick="calcLampCount()">Calculate</button><div id="lt-lamp-result"></div></div>'
     +'<div id="lt-ref" style="display:none"><div class="result-box"><h3>IES Recommended Illuminance Levels</h3>'
     +'<div style="overflow-x:auto"><table class="ref-table"><thead><tr><th>Space Type</th><th>Footcandles</th><th>Lux</th></tr></thead><tbody>'+iesRows+'</tbody></table></div>'
