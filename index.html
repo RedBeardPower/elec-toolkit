@@ -619,6 +619,194 @@ window['init_wirecolor']=function(){wcShow();};
 /* ===== 8. CONDUIT BENDING ===== */
 var BEND_ANGLES=[['10',6.0,'1/16',0.0625],['22.5',2.6,'3/16',0.1875],['30',2.0,'1/4',0.25],['45',1.4,'3/8',0.375],['60',1.2,'1/2',0.5]];
 var STUB_TAKEUP={'1/2"':5,'3/4"':6,'1"':8,'1-1/4"':11};
+/* ===== BENDER LIBRARY =====
+   Deducts (take-up) are industry-standard and stamped on the shoe; centerline
+   bend RADIUS differs by maker (affects gain). r:null = maker does not publish
+   the radius - verify on the tool. Custom benders live in localStorage. */
+var BENDERS=[
+  /* HAND BENDERS - EMT tools. Take-up (deduct) is stamped and standardized across
+     makers (5/6/8/11 for 1/2-1-1/4 EMT); bend RADIUS is what varies by maker. */
+  {id:'generic',name:'Generic EMT hand bender (stamped values)',maker:'Trade standard',type:'hand',
+   note:'Industry-standard deducts. Always trust the value stamped on your bender.',
+   sizes:{'1/2"':{tu:5,r:null,m:''},'3/4"':{tu:6,r:null,m:''},'1"':{tu:8,r:null,m:''},'1-1/4"':{tu:11,r:null,m:''}}},
+  {id:'greenlee840',name:'Greenlee Site-Rite 840-843 (hand)',maker:'Greenlee',type:'hand',
+   note:'841 also 1/2" Rigid; 842 also 3/4" Rigid/IMC; 843 also 1/2"-1" Rigid/IMC. Radii per Greenlee manual.',
+   sizes:{'1/2"':{tu:5,r:4.1875,m:'840/841'},'3/4"':{tu:6,r:5.125,m:'842'},'1"':{tu:8,r:6.5,m:'843'},'1-1/4"':{tu:11,r:9.625,m:'844'}}},
+  {id:'klein',name:'Klein Benfield 562xx (hand)',maker:'Klein Tools',type:'hand',
+   note:'Iron and aluminum heads share deducts. Radii published for 1/2" and 3/4" only.',
+   sizes:{'1/2"':{tu:5,r:5.0,m:'56206'},'3/4"':{tu:6,r:6.0,m:'56207'},'1"':{tu:8,r:null,m:'56208'},'1-1/4"':{tu:11,r:null,m:'56209'}}},
+  {id:'kleiniron',name:'Klein Iron Benfield 51xx (hand)',maker:'Klein Tools',type:'hand',
+   note:'Cast-iron Benfield head (51213 etc). Standard deducts; radii not published - verify on tool.',
+   sizes:{'1/2"':{tu:5,r:null,m:'51213'},'3/4"':{tu:6,r:null,m:'51214'},'1"':{tu:8,r:null,m:'51215'}}},
+  {id:'ideal',name:'IDEAL 74-series (hand)',maker:'IDEAL Industries',type:'hand',
+   note:'74-027 iron also 1/2" Rigid/IMC. 1" radius not published - verify.',
+   sizes:{'1/2"':{tu:5,r:4.34,m:'74-046'},'3/4"':{tu:6,r:5.25,m:'74-027/74-047'},'1"':{tu:8,r:null,m:'74-058'},'1-1/4"':{tu:11,r:9.75,m:'74-034'}}},
+  {id:'milwaukee',name:'Milwaukee 48-22-408x (hand)',maker:'Milwaukee',type:'hand',
+   note:'Standard deducts; radii not published - verify on tool.',
+   sizes:{'1/2"':{tu:5,r:null,m:'48-22-4080'},'3/4"':{tu:6,r:null,m:'48-22-4081'},'1"':{tu:8,r:null,m:'48-22-4082'}}},
+  {id:'southwire',name:'Southwire MCB aluminum head (hand)',maker:'Southwire',type:'hand',
+   note:'Standard deducts; radii not published - verify on tool.',
+   sizes:{'1/2"':{tu:5,r:null,m:'MCB1-2'},'3/4"':{tu:6,r:null,m:'MCB3-4'},'1"':{tu:8,r:null,m:'MCB1'}}},
+  {id:'bigben',name:'Gardner Bender BigBen 96x (hand)',maker:'Gardner Bender',type:'hand',
+   note:'Standard deducts; radii not published - verify on tool.',
+   sizes:{'1/2"':{tu:5,r:null,m:'960'},'3/4"':{tu:6,r:null,m:'961'},'1"':{tu:8,r:null,m:'962'}}},
+  /* TABLE / FLOOR BENDERS - deduct differs by MATERIAL (tu = EMT, tuIMC, tuRigid).
+     Values transcribed from the manufacturer instruction manuals. */
+  {id:'gl555',name:'Greenlee 555 (electric table)',maker:'Greenlee',type:'table',
+   note:'Deduct table from the 555 manual. Minimum stub length = deduct + 2". Rigid column also applies to PVC-coated rigid.',
+   sizes:{'1/2"':{tu:7,tuIMC:7.5,tuRigid:7.5,r:null,m:'555'},
+          '3/4"':{tu:8.875,tuIMC:9,tuRigid:9,r:null,m:'555'},
+          '1"':{tu:10.75,tuIMC:11,tuRigid:11,r:null,m:'555'},
+          '1-1/4"':{tu:13.125,tuIMC:14,tuRigid:14,r:null,m:'555'},
+          '1-1/2"':{tu:13.875,tuIMC:13.75,tuRigid:14.25,r:null,m:'555'},
+          '2"':{tu:15.375,tuIMC:15.25,tuRigid:16.125,r:null,m:'555'}}},
+  {id:'gl1818',name:'Greenlee 1818 (mechanical table)',maker:'Greenlee',type:'table',
+   note:'Deduct table from the 1818 manual. Capacity: 3/4"-2" EMT, 1/2"-1-1/4" IMC, 1/2"-1-1/2" rigid (2" aluminum rigid only). Radius is marked on each shoe.',
+   sizes:{'1/2"':{tu:null,tuIMC:5.625,tuRigid:6,r:null,m:'1818'},
+          '3/4"':{tu:8.6875,tuIMC:8.125,tuRigid:8.125,r:5.25,m:'1818'},
+          '1"':{tu:10.25,tuIMC:10.25,tuRigid:10.25,r:null,m:'1818'},
+          '1-1/4"':{tu:12.625,tuIMC:12.5,tuRigid:12.375,r:8.53,m:'1818'},
+          '1-1/2"':{tu:12.9375,tuIMC:null,tuRigid:15,r:null,m:'1818'},
+          '2"':{tu:15,tuIMC:null,tuRigid:16.3125,r:10.78,m:'1818'}}},
+  {id:'gl1800',name:'Greenlee 1800 (mechanical ratchet)',maker:'Greenlee',type:'table',
+   note:'1/2"-1" IMC and rigid. Shares the 1818 shoe geometry for these sizes - VERIFY against your unit.',
+   sizes:{'1/2"':{tu:null,tuIMC:5.625,tuRigid:6,r:null,m:'1800'},
+          '3/4"':{tu:null,tuIMC:8.125,tuRigid:8.125,r:5.25,m:'1800'},
+          '1"':{tu:null,tuIMC:10.25,tuRigid:10.25,r:null,m:'1800'}}}
+];
+function cbCustoms(){try{return JSON.parse(localStorage.getItem('ecbBenders'))||[];}catch(e){return [];}}
+function cbCustomsSave(a){try{localStorage.setItem('ecbBenders',JSON.stringify(a));}catch(e){}}
+function benderAll(){return BENDERS.concat(cbCustoms());}
+function benderGet(){var id=null;try{id=localStorage.getItem('ecbBenderSel');}catch(e){}var b=benderAll().find(function(x){return x.id===id;});return b||BENDERS[0];}
+function benderMat(){if(!benderIsTable())return 'emt';var e=document.getElementById('cb-mat');return (e&&e.value)||'emt';}
+function benderTU(sz,mat){
+  var b=benderGet(),s=b.sizes[sz];
+  if(!s)return STUB_TAKEUP[sz];
+  mat=mat||'emt';
+  var v=(mat==='rigid')?s.tuRigid:(mat==='imc')?s.tuIMC:s.tu;
+  if(v===undefined)v=s.tu;
+  return (v===null||!isFinite(v))?null:v;
+}
+function benderIsTable(){return benderGet().type==='table';}
+function benderMatName(m){return m==='rigid'?'Rigid':m==='imc'?'IMC':'EMT';}
+function benderR(sz){var b=benderGet(),s=b.sizes[sz];return (s&&isFinite(s.r)&&s.r)?s.r:null;}
+function benderLabel(sz){var b=benderGet(),s=b.sizes[sz];return b.name+(s&&s.m?' ('+s.m+')':'');}
+window.cbBenderFill=function(){
+  var sel=document.getElementById('cb-bender');if(!sel)return;
+  sel.innerHTML=benderAll().map(function(b){return '<option value="'+b.id+'"'+(b.id===benderGet().id?' selected':'')+'>'+escH(b.name)+'</option>';}).join('');
+  var note=document.getElementById('cb-bender-note');
+  if(note)note.textContent=benderGet().note||'';
+};
+window.cbMatChange=function(){
+  var a=document.getElementById('cb-mat'),b=document.getElementById('cb-mat2');
+  var v=(_cbMode==='b2b'&&b)?b.value:(a?a.value:'emt');
+  if(a)a.value=v;if(b)b.value=v;
+  cbSizeFill();cbUpdate();
+};
+window.cbSizeFill=function(){
+  var mat=benderMat(),all=benderGet().sizes;
+  var sizes=Object.keys(all).filter(function(s){return benderTU(s,mat)!==null;});
+  if(!sizes.length)sizes=Object.keys(all);
+  ['cb-mat-wrap','cb-mat-wrap2'].forEach(function(id){var w=document.getElementById(id);if(w)w.style.display=benderIsTable()?'block':'none';});
+  ['cb-ss','cb-bs'].forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    var prev=el.value;
+    el.innerHTML=sizes.map(function(s){return '<option'+(s===prev||( sizes.indexOf(prev)<0&&s==='3/4"')?' selected':'')+'>'+s+'</option>';}).join('');
+  });
+};
+window.cbBenderPick=function(){
+  try{localStorage.setItem('ecbBenderSel',document.getElementById('cb-bender').value);}catch(e){}
+  cbBenderFill();cbSizeFill();cbUpdate();
+};
+window.cbBenderMgr=function(){
+  var p=document.getElementById('cb-bmgr');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block')cbMgrList();
+};
+function cbMgrList(){
+  var el=document.getElementById('cbm-list');if(!el)return;
+  var cs=cbCustoms();
+  el.innerHTML=cs.length?cs.map(function(c){
+    var szs=Object.keys(c.sizes).map(function(s){return s+' tu'+c.sizes[s].tu+(c.sizes[s].r?' r'+c.sizes[s].r:'');}).join(', ');
+    return '<div class="result-row"><span class="result-label">'+escH(c.name)+' - '+szs+'</span><button class="remove-btn" style="height:28px;width:28px;margin:0" onclick="cbMgrDel(\''+c.id+'\')">x</button></div>';
+  }).join(''):'<div style="font-size:12px;color:#666">No custom benders saved yet.</div>';
+}
+window.cbMgrDel=function(id){
+  cbCustomsSave(cbCustoms().filter(function(c){return c.id!==id;}));
+  try{if(localStorage.getItem('ecbBenderSel')===id)localStorage.removeItem('ecbBenderSel');}catch(e){}
+  cbBenderFill();cbSizeFill();cbMgrList();cbUpdate();
+};
+window.cbMgrSave=function(){
+  var name=document.getElementById('cbm-name').value.trim();
+  var msg=document.getElementById('cbm-msg');
+  if(!name){msg.textContent='Give the bender a name.';return;}
+  var SZ=['1/2"','3/4"','1"','1-1/4"'],sizes={};
+  SZ.forEach(function(s,i){
+    var tu=parseFloat(document.getElementById('cbm-tu-'+i).value);
+    var r=parseFloat(document.getElementById('cbm-r-'+i).value);
+    if(isFinite(tu)&&tu>0)sizes[s]={tu:tu,r:(isFinite(r)&&r>0)?r:null};
+  });
+  if(!Object.keys(sizes).length){msg.textContent='Enter a take-up for at least one size.';return;}
+  var cs=cbCustoms(),c={id:'c'+Date.now(),name:name,note:'Custom bender (saved on this device).',sizes:sizes};
+  cs.push(c);cbCustomsSave(cs);
+  try{localStorage.setItem('ecbBenderSel',c.id);}catch(e){}
+  msg.textContent='Saved and selected.';
+  document.getElementById('cbm-name').value='';
+  cbBenderFill();cbSizeFill();cbMgrList();cbUpdate();
+};
+/* Bend code: bender-independent bend definition for the prefab form.
+   Paste into the Load box to re-create the bend and re-target any bender. */
+function cbCode(){
+  var m=_cbMode;if(m==='guide')return '';
+  function g(id){return document.getElementById(id).value;}
+  var p=['EB1',m];
+  if(m==='offset')p.push('d='+g('cb-od'),'ang='+g('cb-oa'));
+  else if(m==='kick')p.push('k='+g('cb-kk'),'ang='+g('cb-ka'));
+  else if(m==='saddle')p.push('d='+g('cb-sd'),'dc='+g('cb-sc'));
+  else if(m==='saddle4')p.push('d='+g('cb-4d'),'w='+g('cb-4w'),'ang='+g('cb-4a'));
+  else if(m==='stub')p.push('h='+g('cb-sh'),'sz='+g('cb-ss'),'mat='+benderMat());
+  else if(m==='b2b')p.push('h='+g('cb-bh'),'bb='+g('cb-bd'),'sz='+g('cb-bs'),'mat='+benderMat());
+  else if(m==='roll')p.push('rise='+g('cb-rr'),'roll='+g('cb-rl'),'ang='+g('cb-ra'));
+  else if(m==='par')p.push('ang='+g('cb-pba'),'sp='+g('cb-pbs'),'n='+g('cb-pbn'));
+  else if(m==='multi'){
+    var mb=[].map.call(document.querySelectorAll('#mb-rows .wire-row'),function(r){return r.querySelector('.mb-len').value+':'+r.querySelector('.mb-ang').value+':'+(r.querySelector('.mb-dir').value==='up'?'u':'d');});
+    p.push('m='+mb.join(','),'tail='+g('mb-tail'));
+  }
+  p.push('bender='+benderGet().id);
+  return p.join('|');
+}
+window.cbLoadCode=function(){
+  var note=document.getElementById('cb-bender-note');
+  var raw=document.getElementById('cb-code').value.trim();
+  if(!raw){if(note)note.textContent='Paste a bend code first.';return;}
+  var parts=raw.split('|');
+  if(parts[0]!=='EB1'||parts.length<2){if(note)note.textContent='Not a valid bend code (should start with EB1|).';return;}
+  var mode=parts[1],kv={};
+  parts.slice(2).forEach(function(x){var i=x.indexOf('=');if(i>0)kv[x.slice(0,i)]=x.slice(i+1);});
+  if(CB_MODES.indexOf(mode)<0||mode==='guide'){if(note)note.textContent='Unknown bend type in code: '+mode;return;}
+  if(kv.bender&&benderAll().some(function(b){return b.id===kv.bender;})){
+    try{localStorage.setItem('ecbBenderSel',kv.bender);}catch(e){}
+    cbBenderFill();cbSizeFill();
+  }
+  var btn=document.querySelectorAll('#cb-tabs .tab-btn')[CB_MODES.indexOf(mode)];
+  if(btn)cbTab(mode,btn);
+  function s(id,v){var e=document.getElementById(id);if(e&&v!==undefined)e.value=v;}
+  if(mode==='offset'){s('cb-od',kv.d);s('cb-oa',kv.ang);}
+  else if(mode==='kick'){s('cb-kk',kv.k);s('cb-ka',kv.ang);}
+  else if(mode==='saddle'){s('cb-sd',kv.d);s('cb-sc',kv.dc);}
+  else if(mode==='saddle4'){s('cb-4d',kv.d);s('cb-4w',kv.w);s('cb-4a',kv.ang);}
+  else if(mode==='stub'){if(kv.mat){s('cb-mat',kv.mat);s('cb-mat2',kv.mat);}cbSizeFill();s('cb-ss',kv.sz);s('cb-sh',kv.h);}
+  else if(mode==='b2b'){if(kv.mat){s('cb-mat',kv.mat);s('cb-mat2',kv.mat);}cbSizeFill();s('cb-bs',kv.sz);s('cb-bh',kv.h);s('cb-bd',kv.bb);}
+  else if(mode==='roll'){s('cb-rr',kv.rise);s('cb-rl',kv.roll);s('cb-ra',kv.ang);}
+  else if(mode==='par'){s('cb-pba',kv.ang);s('cb-pbs',kv.sp);s('cb-pbn',kv.n);}
+  else if(mode==='multi'&&kv.m){
+    var mr=document.getElementById('mb-rows');mr.innerHTML='';
+    kv.m.split(',').forEach(function(seg){var a=seg.split(':');mr.insertAdjacentHTML('beforeend',mbRow(parseFloat(a[0])||12,a[1]||'90',a[2]==='d'?'down':'up'));});
+    s('mb-tail',kv.tail);
+  }
+  cbUpdate();
+  if(note)note.textContent='Bend loaded. Pick any bender to re-target the marks.';
+};
 var _cbMode='offset';
 function cbGuideHTML(){
   function box(title,body){return '<div class="result-box" style="margin-top:1rem"><h3>'+title+'</h3>'+body+'</div>';}
@@ -683,7 +871,22 @@ function renderConduitbend(){
   var angOpts=BEND_ANGLES.map(function(a){return '<option value="'+a[0]+'"'+(a[0]==='30'?' selected':'')+'>'+a[0]+'&deg;</option>';}).join('');
   var szOpts=Object.keys(STUB_TAKEUP).map(function(s){return '<option'+(s==='3/4"'?' selected':'')+'>'+s+'</option>';}).join('');
   var tradeOpts=CONDUIT_TRADE_SIZES.map(function(s){return '<option'+(s==='3/4"'?' selected':'')+'>'+s+'</option>';}).join('');
-  return '<div class="tab-row"><button class="tab-btn" id="cb-pf-toggle" onclick="cbPrefabToggle(this)">&#128203; Prefab Order Mode: OFF</button></div>'
+  return '<div class="result-box" style="margin:0 0 1rem"><h3>Bender</h3>'
+    +'<div class="row"><div class="field" style="margin-bottom:.5rem"><label>Select Bender</label><select id="cb-bender" onchange="cbBenderPick()"></select></div>'
+    +'<div class="field" style="margin-bottom:.5rem"><label>&nbsp;</label><button class="add-wire-btn" style="width:100%;margin:0" onclick="cbBenderMgr()">&#9881; Manage Custom Benders</button></div></div>'
+    +'<div id="cb-bender-note" style="font-size:12px;color:#888"></div>'
+    +'<div id="cb-bmgr" style="display:none;margin-top:.75rem;border-top:1px solid #2e2e2e;padding-top:.75rem">'
+    +'<div style="font-size:12px;color:#aaa;margin-bottom:.5rem">Add a custom bender - enter the take-up (deduct) and optional centerline radius stamped on each shoe. Saved on this device.</div>'
+    +'<div class="field"><label>Bender Name</label><input type="text" id="cbm-name" placeholder="e.g. Shop Chicago 555"></div>'
+    +['1/2"','3/4"','1"','1-1/4"'].map(function(s,i){return '<div class="row3"><div class="field"><label>'+s+' Take-Up (in)</label><input type="number" id="cbm-tu-'+i+'" step="0.25" min="0" data-nostp></div><div class="field"><label>'+s+' Radius (in, opt)</label><input type="number" id="cbm-r-'+i+'" step="0.0625" min="0" data-nostp></div><div></div></div>';}).join('')
+    +'<button class="btn" onclick="cbMgrSave()">Save Bender</button><div id="cbm-msg" style="font-size:12px;color:#888;margin-top:.25rem"></div>'
+    +'<div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin:.75rem 0 .25rem">Saved Custom Benders</div><div id="cbm-list"></div>'
+    +'</div></div>'
+    +'<div class="result-box" style="margin:0 0 1rem"><h3>Load a Bend Code</h3>'
+    +'<div style="font-size:12px;color:#888;margin-bottom:.5rem">Paste a bend code from a prefab order to re-create the bend, then pick your bender to re-target the marks.</div>'
+    +'<div class="row"><div class="field" style="margin-bottom:0"><label>Bend Code</label><input type="text" id="cb-code" placeholder="EB1|offset|d=6|ang=30|..."></div>'
+    +'<div class="field" style="margin-bottom:0"><label>&nbsp;</label><button class="add-wire-btn" style="width:100%;margin:0" onclick="cbLoadCode()">&#8594; Load Bend</button></div></div></div>'
+    +'<div class="tab-row"><button class="tab-btn" id="cb-pf-toggle" onclick="cbPrefabToggle(this)">&#128203; Prefab Order Mode: OFF</button></div>'
     +'<div class="tab-row" id="cb-tabs">'
     +'<button class="tab-btn active" onclick="cbTab(\'offset\',this)">Offset</button>'
     +'<button class="tab-btn" onclick="cbTab(\'kick\',this)">Kick</button>'
@@ -701,7 +904,8 @@ function renderConduitbend(){
     +'<div id="cb-saddle" style="display:none"><div class="row"><div class="field"><label>Obstacle Depth (in)</label><input type="number" id="cb-sd" value="4" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
     +'<div class="field"><label>Distance to Obstacle Center (in)</label><input type="number" id="cb-sc" value="30" min="1" step="1" oninput="cbUpdate()"></div></div><div id="cb-saddle-result"></div></div>'
     +'<div id="cb-stub" style="display:none"><div class="row"><div class="field"><label>Stub Height (in)</label><input type="number" id="cb-sh" value="12" min="1" step="0.5" oninput="cbUpdate()"></div>'
-    +'<div class="field"><label>EMT Size (hand bender)</label><select id="cb-ss" onchange="cbUpdate()">'+szOpts+'</select></div></div><div id="cb-stub-result"></div></div>'
+    +'<div class="field"><label>Conduit Size</label><select id="cb-ss" onchange="cbUpdate()">'+szOpts+'</select></div></div>'
+    +'<div class="field" id="cb-mat-wrap" style="display:none"><label>Material (table bender deducts differ)</label><select id="cb-mat" onchange="cbMatChange()"><option value="emt">EMT</option><option value="imc">IMC</option><option value="rigid">Rigid / PVC-coated</option></select></div><div id="cb-stub-result"></div></div>'
     +'<div id="cb-kick" style="display:none"><div class="row"><div class="field"><label>Kick Offset (in)</label><input type="number" id="cb-kk" value="8" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
     +'<div class="field"><label>Kick Angle</label><select id="cb-ka" onchange="cbUpdate()">'+angOpts+'</select></div></div><div id="cb-kick-result"></div></div>'
     +'<div id="cb-saddle4" style="display:none"><div class="row3"><div class="field"><label>Obstacle Depth (in)</label><input type="number" id="cb-4d" value="4" min="0.25" step="0.25" oninput="cbUpdate()"></div>'
@@ -709,7 +913,8 @@ function renderConduitbend(){
     +'<div class="field"><label>Bend Angle</label><select id="cb-4a" onchange="cbUpdate()">'+angOpts+'</select></div></div><div id="cb-saddle4-result"></div></div>'
     +'<div id="cb-b2b" style="display:none"><div class="row3"><div class="field"><label>First Stub Height (in)</label><input type="number" id="cb-bh" value="24" min="1" step="0.5" oninput="cbUpdate()"></div>'
     +'<div class="field"><label>Back-to-Back Distance (in)</label><input type="number" id="cb-bd" value="60" min="1" step="0.5" oninput="cbUpdate()"></div>'
-    +'<div class="field"><label>EMT Size</label><select id="cb-bs" onchange="cbUpdate()">'+szOpts+'</select></div></div><div id="cb-b2b-result"></div></div>'
+    +'<div class="field"><label>Conduit Size</label><select id="cb-bs" onchange="cbUpdate()">'+szOpts+'</select></div></div>'
+    +'<div class="field" id="cb-mat-wrap2" style="display:none"><label>Material (table bender deducts differ)</label><select id="cb-mat2" onchange="cbMatChange()"><option value="emt">EMT</option><option value="imc">IMC</option><option value="rigid">Rigid / PVC-coated</option></select></div><div id="cb-b2b-result"></div></div>'
     +'<div id="cb-roll" style="display:none"><div class="row3"><div class="field"><label>Rise (in)</label><input type="number" id="cb-rr" value="10" min="0" step="0.25" oninput="cbUpdate()"></div>'
     +'<div class="field"><label>Roll (in)</label><input type="number" id="cb-rl" value="6" min="0" step="0.25" oninput="cbUpdate()"></div>'
     +'<div class="field"><label>Bend Angle</label><select id="cb-ra" onchange="cbUpdate()">'+angOpts+'</select></div></div><div id="cb-roll-result"></div></div>'
@@ -744,6 +949,7 @@ function renderConduitbend(){
     +'</div>';
 }
 window['init_conduitbend']=function(){
+  cbBenderFill();cbSizeFill();
   _cbMode='offset';_cbPrefab=false;_mbSeq=0;
   var mr=document.getElementById('mb-rows');
   mr.innerHTML='';
@@ -788,11 +994,13 @@ function cbSaddle(){
   ctx.fillStyle='#f90';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(spread.toFixed(2)+'"',c-o/2,y0-40);ctx.fillText(spread.toFixed(2)+'"',c+o/2,y0-40);
 }
 function cbStub(){
-  var h=parseFloat(document.getElementById('cb-sh').value)||0,sz=document.getElementById('cb-ss').value,tu=STUB_TAKEUP[sz],res=document.getElementById('cb-stub-result');
+  var mat=benderMat();
+  var h=parseFloat(document.getElementById('cb-sh').value)||0,sz=document.getElementById('cb-ss').value,tu=benderTU(sz,mat),res=document.getElementById('cb-stub-result');
+  if(tu===null){res.innerHTML='<div class="err">'+benderGet().name+' does not bend '+sz+' '+benderMatName(mat)+'.</div>';cbCtx();return;}
   if(!(h>0)){res.innerHTML='<div class="err">Enter a valid stub height.</div>';return;}
-  if(h<=tu){res.innerHTML='<div class="err">Stub height must exceed the '+tu+'" take-up for '+sz+' EMT.</div>';cbCtx();return;}
+  if(h<=tu){res.innerHTML='<div class="err">Stub height must exceed the '+tu+'" take-up for '+sz+' '+benderMatName(mat)+' on this bender.</div>';cbCtx();return;}
   var mark=h-tu;
-  res.innerHTML=rb(rh('90&deg; Stub-Up - '+sz+' EMT')+rr('Take-Up (deduct)',tu+' in','')+rr('Mark From Conduit End','<span style="font-size:18px">'+mark.toFixed(2)+'</span> in','good')+rn('Align the mark with the arrow on the bender head, bend to 90&deg;. Take-ups are for common hand benders - verify the deduct stamped on yours.'));
+  res.innerHTML=rb(rh('90&deg; Stub-Up - '+sz+' '+benderMatName(mat))+rr('Bender',benderLabel(sz),'')+rr('Take-Up (deduct)',tu+' in','')+rr('Mark From Conduit End','<span style="font-size:18px">'+mark.toFixed(2)+'</span> in','good')+rn('Align the mark with the arrow on the bender head, bend to 90&deg;. Take-up is for the selected bender - always verify the deduct stamped on yours.'));
   var ctx=cbCtx();if(!ctx)return;
   var y0=190,xB=440,yT=40;
   cbPipe(ctx,[[60,y0],[xB,y0],[xB,yT]]);
@@ -826,10 +1034,12 @@ function cbSaddle4(){
   cbDim(ctx,535,95,170,d.toFixed(2)+'" depth');
 }
 function cbB2b(){
-  var h=parseFloat(document.getElementById('cb-bh').value)||0,b=parseFloat(document.getElementById('cb-bd').value)||0,sz=document.getElementById('cb-bs').value,tu=STUB_TAKEUP[sz],res=document.getElementById('cb-b2b-result');
-  if(!(h>tu)){res.innerHTML='<div class="err">Stub height must exceed the '+tu+'" take-up for '+sz+' EMT.</div>';cbCtx();return;}
+  var mat=benderMat();
+  var h=parseFloat(document.getElementById('cb-bh').value)||0,b=parseFloat(document.getElementById('cb-bd').value)||0,sz=document.getElementById('cb-bs').value,tu=benderTU(sz,mat),res=document.getElementById('cb-b2b-result');
+  if(tu===null){res.innerHTML='<div class="err">'+benderGet().name+' does not bend '+sz+' '+benderMatName(mat)+'.</div>';cbCtx();return;}
+  if(!(h>tu)){res.innerHTML='<div class="err">Stub height must exceed the '+tu+'" take-up for '+sz+' '+benderMatName(mat)+' on this bender.</div>';cbCtx();return;}
   if(!(b>2*tu)){res.innerHTML='<div class="err">Back-to-back distance too short for two '+sz+' 90s.</div>';cbCtx();return;}
-  res.innerHTML=rb(rh('Back-to-Back 90s - '+sz+' EMT')+rr('First 90 - Mark From End',(h-tu).toFixed(2)+' in','good')+rr('Back-to-Back Distance',b.toFixed(2)+' in','')+rr('Second 90 - Mark','<span style="font-size:18px">'+b.toFixed(2)+'</span>" from BACK of first 90','good')+rn('Bend the first 90 normally (arrow on mark). For the second, measure from the back of the first 90, mark, then align the mark with the STAR POINT with the bender reversed (hook facing the first 90).'));
+  res.innerHTML=rb(rh('Back-to-Back 90s - '+sz+' '+benderMatName(mat))+rr('Bender',benderLabel(sz),'')+rr('First 90 - Mark From End',(h-tu).toFixed(2)+' in','good')+rr('Back-to-Back Distance',b.toFixed(2)+' in','')+rr('Second 90 - Mark','<span style="font-size:18px">'+b.toFixed(2)+'</span>" from BACK of first 90','good')+rn('Bend the first 90 normally (arrow on mark). For the second, measure from the back of the first 90, mark, then align the mark with the STAR POINT with the bender reversed (hook facing the first 90).'));
   var ctx=cbCtx();if(!ctx)return;
   cbPipe(ctx,[[150,45],[150,170],[470,170],[470,45]]);
   cbMark(ctx,150,170,'90 #1',false);cbMark(ctx,470,170,'90 #2',false);
@@ -1019,7 +1229,7 @@ function cbSpec(){
 function cbFmtDate(iso){if(!iso)return '-';var p=iso.split('-');return p.length===3?(+p[1])+'/'+(+p[2])+'/'+p[0]:iso;}
 function cbBuildForm(spec,f){
   var W=850,specPairs=1+Math.ceil(spec.rows.length/2);
-  var H=Math.max(1100,112+3*84+32+specPairs*52+314+(f.desc?150:0)+50);
+  var H=Math.max(1100,112+3*84+32+(specPairs+1)*52+90+314+(f.desc?150:0)+50);
   var cv=document.createElement('canvas');cv.width=W;cv.height=H;
   var ctx=cv.getContext('2d');
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
@@ -1040,7 +1250,12 @@ function cbBuildForm(spec,f){
   row2('Name',f.name,'Phone',f.phone);
   sect('BEND SPECIFICATION');
   row2('Conduit',f.ctype+' '+f.csz,'Quantity',f.qty);
+  row2('Bender Used',f.bender,'Marks Valid For',f.bender);
   for(var i=0;i<spec.rows.length;i+=2){row2(spec.rows[i][0],spec.rows[i][1],spec.rows[i+1]?spec.rows[i+1][0]:undefined,spec.rows[i+1]?spec.rows[i+1][1]:undefined);}
+  sect('BEND CODE (re-enter to re-target a different bender)');
+  ctx.fillStyle='#111';ctx.font='bold 15px monospace';ctx.textAlign='left';ctx.fillText(f.code,40,y+2);
+  ctx.fillStyle='#888';ctx.font='11px system-ui';ctx.fillText('Paste this into the Conduit Bending tool (Load a Bend Code), then pick your bender to get new marks.',40,y+22);
+  y+=44;
   sect('DIAGRAM');
   var src=document.getElementById('cb-cv');
   ctx.fillStyle='#141414';ctx.fillRect(40,y-14,W-80,272);
@@ -1068,7 +1283,7 @@ window.cbExport=function(email){
   var spec=cbSpec();
   if(!spec){err.textContent='Fix the bend inputs above first - the current bend is not valid.';return;}
   function v(id){return document.getElementById(id).value.trim();}
-  var f={job:v('cb-pjob'),num:v('cb-pjobnum'),name:v('cb-pname'),phone:v('cb-pphone'),date:v('cb-pdate'),need:v('cb-pneed'),urg:v('cb-purg'),ctype:v('cb-ptype'),csz:v('cb-psz'),qty:v('cb-pqty')||'1',desc:v('cb-pdesc')};
+  var f={job:v('cb-pjob'),num:v('cb-pjobnum'),name:v('cb-pname'),phone:v('cb-pphone'),date:v('cb-pdate'),need:v('cb-pneed'),urg:v('cb-purg'),ctype:v('cb-ptype'),csz:v('cb-psz'),qty:v('cb-pqty')||'1',desc:v('cb-pdesc'),bender:benderGet().name,code:cbCode()};
   if(!f.job||!f.name||!f.need){err.textContent='Job name, your name, and date needed are required.';return;}
   cbRemember(f);
   var cv=cbBuildForm(spec,f);
@@ -1078,8 +1293,9 @@ window.cbExport=function(email){
     setTimeout(function(){URL.revokeObjectURL(a.href);},5000);
   });
   if(email){
-    var lines=['PREFAB BEND ORDER - '+f.urg,'','Job: '+f.job+(f.num?' (#'+f.num+')':''),'Requested by: '+f.name+(f.phone?' / '+f.phone:''),'Date: '+cbFmtDate(f.date)+'   Needed by: '+cbFmtDate(f.need),'','Conduit: '+f.ctype+' '+f.csz+'   Qty: '+f.qty];
+    var lines=['PREFAB BEND ORDER - '+f.urg,'','Job: '+f.job+(f.num?' (#'+f.num+')':''),'Requested by: '+f.name+(f.phone?' / '+f.phone:''),'Date: '+cbFmtDate(f.date)+'   Needed by: '+cbFmtDate(f.need),'','Conduit: '+f.ctype+' '+f.csz+'   Qty: '+f.qty,'Bender used (marks valid for): '+f.bender];
     spec.rows.forEach(function(r){lines.push(r[0]+': '+r[1]);});
+    lines.push('','BEND CODE (re-enter to re-target a different bender):',f.code);
     if(f.desc)lines.push('','Notes: '+f.desc);
     lines.push('','The order form image ('+fname+') was just downloaded - please attach it to this email before sending.');
     location.href='mailto:?subject='+encodeURIComponent('Prefab Bend Order - '+f.job+' - '+spec.type+(f.urg!=='Standard'?' ['+f.urg+']':''))+'&body='+encodeURIComponent(lines.join('\r\n'));
